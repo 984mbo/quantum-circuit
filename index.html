@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="量子回路シミュレータ — 量子計算を直感的に学べるインタラクティブWebアプリ">
+  <title>Quantum Circuit Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+
+<body>
+  <!-- ─── Header ─────────────────────────────────────────── -->
+  <header class="app-header">
+    <div class="header-left">
+      <h1 class="app-title">
+        <span class="title-icon">⚛</span>
+        Quantum Circuit Simulator
+      </h1>
+    </div>
+    <div class="header-center">
+      <div class="demo-buttons">
+        <button class="demo-btn" id="demo-h">H → Measure</button>
+        <button class="demo-btn" id="demo-bell">Bell State</button>
+        <button class="demo-btn" id="demo-ghz">GHZ State</button>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn" id="btn-input-config" title="Configure Input">⚙ Input</button>
+      <button class="icon-btn" id="btn-learn" title="Learn Mode">📘 Learn</button>
+      <button class="icon-btn" id="btn-save" title="Save">💾 Save</button>
+      <button class="icon-btn" id="btn-load" title="Load">📂 Load</button>
+    </div>
+  </header>
+
+  <!-- ─── Main 2-Panel Layout ──────────────────────────── -->
+  <main class="app-main">
+
+    <!-- ═══ Top: Circuit + Controls ═══════════════════════ -->
+    <section class="panel top-panel">
+      <!-- Toolbar row: wire controls + playback + settings -->
+      <div class="toolbar">
+        <div class="toolbar-group">
+          <button class="tool-btn" id="btn-remove-wire" title="Remove wire">− Wire</button>
+          <button class="tool-btn" id="btn-add-wire" title="Add wire">+ Wire</button>
+          <span class="toolbar-divider"></span>
+          <button class="tool-btn delete-btn" id="btn-delete-gate" title="Delete selected gate (Del)">🗑 Delete</button>
+        </div>
+
+        <div class="toolbar-group playback-group">
+          <button class="play-btn" id="btn-reset" title="Reset">⟲</button>
+          <button class="play-btn primary" id="btn-play" title="Play/Pause">▶</button>
+          <button class="play-btn" id="btn-step" title="Step Forward">⏭</button>
+          <div class="speed-control">
+            <input type="range" id="speed-slider" min="0.25" max="4" step="0.25" value="1">
+            <span id="speed-label">1x</span>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <select id="measure-mode" class="tool-select" title="Measurement mode">
+            <option value="probability">Probability</option>
+            <option value="shot">Single Shot</option>
+          </select>
+          <input type="number" id="shots-input" value="1024" min="1" max="10000" class="tool-input" title="Shot count">
+          <button class="tool-btn accent" id="btn-run-shots">Run Shots</button>
+        </div>
+      </div>
+
+      <!-- Circuit area: sidebar palette + canvas -->
+      <div class="circuit-area">
+        <!-- Gate palette sidebar (drag source) -->
+        <div class="gate-sidebar">
+          <div class="sidebar-section">
+            <div class="sidebar-label">Single</div>
+            <div class="sidebar-gates">
+              <div class="drag-gate" draggable="true" data-gate="I" style="--gc:#94a3b8">I</div>
+              <div class="drag-gate" draggable="true" data-gate="X" style="--gc:#ff4444">X</div>
+              <div class="drag-gate" draggable="true" data-gate="Y" style="--gc:#ff6b6b">Y</div>
+              <div class="drag-gate" draggable="true" data-gate="Z" style="--gc:#ef4444">Z</div>
+              <div class="drag-gate" draggable="true" data-gate="H" style="--gc:#ffd700">H</div>
+              <div class="drag-gate" draggable="true" data-gate="S" style="--gc:#a855f7">S</div>
+              <div class="drag-gate" draggable="true" data-gate="T" style="--gc:#c084fc">T</div>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <div class="sidebar-label">Rotation</div>
+            <div class="sidebar-gates">
+              <div class="drag-gate" draggable="true" data-gate="Rx" style="--gc:#22d3ee">Rx</div>
+              <div class="drag-gate" draggable="true" data-gate="Ry" style="--gc:#06b6d4">Ry</div>
+              <div class="drag-gate" draggable="true" data-gate="Rz" style="--gc:#0891b2">Rz</div>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <div class="sidebar-label">Multi</div>
+            <div class="sidebar-gates">
+              <div class="drag-gate" draggable="true" data-gate="CX" style="--gc:#3b82f6">CX</div>
+              <div class="drag-gate" draggable="true" data-gate="CZ" style="--gc:#60a5fa">CZ</div>
+              <div class="drag-gate" draggable="true" data-gate="SWAP" style="--gc:#22c55e">SWAP</div>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <div class="sidebar-label">Measure</div>
+            <div class="sidebar-gates">
+              <div class="drag-gate" draggable="true" data-gate="Measure" style="--gc:#f97316">M</div>
+            </div>
+          </div>
+          <!-- Input state presets -->
+
+        </div>
+
+        <!-- Circuit SVG canvas -->
+        <div class="circuit-container" id="circuit-container">
+          <svg id="circuit-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          <div class="drop-overlay" id="drop-overlay"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ Bottom: State Viewer ═════════════════════════ -->
+    <section class="panel bottom-panel">
+      <div class="panel-header">
+        <span class="panel-title">Quantum State</span>
+        <span class="step-info" id="step-info">Ready</span>
+      </div>
+      <div class="state-container" id="state-viewer"></div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Input Configuration Drawer -->
+  <div class="input-drawer" id="input-drawer">
+    <div class="drawer-header">
+      <h2>⚙ Input Configuration</h2>
+      <button class="close-drawer" id="btn-close-input">×</button>
+    </div>
+    <div class="drawer-content">
+      <div class="drawer-instruction">
+        Define the initial state by setting coefficients for each basis state.
+        Values must be normalized.
+      </div>
+      <div id="input-rows-container">
+        <!-- JS fills this -->
+      </div>
+      <div class="drawer-actions">
+        <button class="tool-btn" id="btn-normalize-input">Normalize</button>
+        <button class="tool-btn primary" id="btn-apply-input">Apply State</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="sim/gates_extra.js"></script>
+  <script type="module" src="lessons/labs.js"></script>
+  <script type="module" src="ui/learnDrawer.js"></script>
+  <script type="module" src="ui/controls.js"></script>
+</body>
+
+</html>
