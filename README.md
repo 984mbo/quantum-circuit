@@ -94,6 +94,9 @@ python3 -m http.server 8080
 - **Bell State**: 量子もつれ (Entanglement)
 - **GHZ State**: 3量子ビットのもつれ
 
+# Gitにuser.name と user.emailを登録
+git config --global user.email "あなたのメールアドレス"
+git config --global user.name "あなたの名前"
 
 ## 使い方メモ
 1. フェッチ
