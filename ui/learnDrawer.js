@@ -6,7 +6,7 @@ import { LABS } from '../lessons/labs.js';
 
 export class LearnDrawer {
     /**
-     * @param {Object} app API from controls.js (loadCircuit, setInputs, runShots, etc.)
+     * @param {Object} app API from controls.js
      */
     constructor(app) {
         this.app = app;
@@ -18,57 +18,81 @@ export class LearnDrawer {
     }
 
     _init() {
-        // Create Drawer DOM
         const drawer = document.createElement('div');
         drawer.className = 'learn-drawer';
         drawer.innerHTML = `
             <div class="learn-header">
-                <h2>📘 Learn Quantum</h2>
+                <h2>Learn Quantum Lab</h2>
                 <button class="close-drawer">×</button>
             </div>
             <div class="learn-content">
                 <div class="lab-list">
-                    <h3>Chapter 3 Circuits</h3>
-                    ${Object.entries(LABS).map(([k, v]) =>
-            `<button class="lab-item" data-id="${k}">${v.title}</button>`
-        ).join('')}
+                    <h3>Learning Paths</h3>
+                    <p class="lab-list-note">直感で掴む -> 実験する -> 理論と比較する</p>
+                    <div class="lab-list-items">
+                        ${Object.entries(LABS).map(([k, v]) => `
+                            <button class="lab-item" data-id="${k}">
+                                <span class="lab-item-title">${v.title}</span>
+                                <span class="lab-item-meta">${v.chapter || 'General'} | ${v.difficulty || 'Core'}</span>
+                            </button>
+                        `).join('')}
+                    </div>
                 </div>
-                
+
                 <div class="lab-detail" style="display:none;">
                     <button class="back-list">← Back</button>
                     <h3 id="lab-title"></h3>
+                    <div class="lab-tags">
+                        <span id="lab-chapter" class="lab-tag"></span>
+                        <span id="lab-difficulty" class="lab-tag"></span>
+                    </div>
+                    <p id="lab-goal" class="lab-goal"></p>
+                    <ul id="lab-intuition" class="lab-intuition"></ul>
                     <div id="lab-desc"></div>
-                    
+
+                    <div class="guided-panel">
+                        <div class="guided-title">Guided Actions</div>
+                        <div id="guided-actions" class="guided-actions"></div>
+                    </div>
+
+                    <div class="experiment-panel" id="experiment-panel" style="display:none;">
+                        <label for="exp-select">Experiment Scenario</label>
+                        <div class="experiment-row">
+                            <select id="exp-select"></select>
+                            <button id="btn-apply-exp">Apply</button>
+                        </div>
+                        <div id="exp-note" class="exp-note"></div>
+                    </div>
+
                     <div class="lab-controls">
                         <div class="control-group">
                             <label>1. Setup:</label>
                             <button id="btn-load-lab">Load Lab Circuit</button>
                             <button id="btn-set-inputs">Set Inputs</button>
                         </div>
-                        
+
                         <div class="control-group" id="param-controls" style="display:none;">
                             <label>Param &theta; (<span id="theta-val">0.25</span>):</label>
                             <input type="range" id="theta-slider" min="0" max="1" step="0.05" value="0.25">
                         </div>
-                        
+
                         <div class="control-group">
                             <label>2. Verify:</label>
                             <button id="btn-run-check" class="primary">Run Shots & Check</button>
                         </div>
                     </div>
-                    
+
                     <div id="check-result" class="check-result"></div>
+                    <div id="insight-box" class="insight-box"></div>
                 </div>
             </div>
         `;
         document.body.appendChild(drawer);
         this.container = drawer;
 
-        // Events
         drawer.querySelector('.close-drawer').onclick = () => this.close();
-
-        drawer.querySelectorAll('.lab-item').forEach(b => {
-            b.onclick = () => this.selectLab(b.dataset.id);
+        drawer.querySelectorAll('.lab-item').forEach((button) => {
+            button.onclick = () => this.selectLab(button.dataset.id);
         });
 
         drawer.querySelector('.back-list').onclick = () => {
@@ -76,19 +100,20 @@ export class LearnDrawer {
             drawer.querySelector('.lab-detail').style.display = 'none';
         };
 
-        // Actions
         drawer.querySelector('#btn-load-lab').onclick = () => this._loadCurrentLab();
         drawer.querySelector('#btn-set-inputs').onclick = () => this._setLabInputs();
         drawer.querySelector('#btn-run-check').onclick = () => this._runCheck();
 
-        // Slider
+        drawer.querySelector('#btn-apply-exp').onclick = () => this._applyExperiment();
+        drawer.querySelector('#exp-select').onchange = () => this._refreshExperimentNote();
+
         const slider = drawer.querySelector('#theta-slider');
         slider.oninput = (e) => {
-            document.getElementById('theta-val').textContent = e.target.value;
-            this._updateLabParams(parseFloat(e.target.value));
+            const val = parseFloat(e.target.value);
+            this._setThetaUI(val);
+            this._updateLabParams(val);
         };
 
-        // ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) this.close();
         });
@@ -113,31 +138,129 @@ export class LearnDrawer {
         detail.style.display = 'block';
 
         detail.querySelector('#lab-title').textContent = lab.title;
+        detail.querySelector('#lab-chapter').textContent = lab.chapter || 'General';
+        detail.querySelector('#lab-difficulty').textContent = lab.difficulty || 'Core';
+        detail.querySelector('#lab-goal').textContent = lab.goal || '';
         detail.querySelector('#lab-desc').innerHTML = lab.descriptionHTML;
         detail.querySelector('#check-result').textContent = '';
         detail.querySelector('#check-result').className = 'check-result';
+        detail.querySelector('#insight-box').innerHTML = '';
 
-        // Show/Hide params
+        this._renderIntuition(lab);
+        this._renderGuidedActions(lab);
+        this._renderExperiments(lab);
+
         const paramGroup = detail.querySelector('#param-controls');
         if (lab.params && lab.params.theta !== undefined) {
             paramGroup.style.display = 'block';
-            const slider = detail.querySelector('#theta-slider');
-            // Assuming theta 0-1 range for UI (x 2pi or pi handled in labs.js)
-            // Labs.js default is e.g. 0.125
-            slider.value = lab.params.theta;
-            document.getElementById('theta-val').textContent = lab.params.theta;
+            this._setThetaUI(lab.params.theta);
         } else {
             paramGroup.style.display = 'none';
         }
     }
 
+    _renderIntuition(lab) {
+        const list = this.container.querySelector('#lab-intuition');
+        const items = lab.intuitionBullets || [];
+        list.innerHTML = items.map((line) => `<li>${line}</li>`).join('');
+    }
+
+    _renderGuidedActions(lab) {
+        const wrap = this.container.querySelector('#guided-actions');
+        const steps = lab.guidedSteps || [];
+        wrap.innerHTML = steps.map((step) => `
+            <button class="guided-action" data-action="${step.action}">${step.label}</button>
+        `).join('');
+
+        wrap.querySelectorAll('.guided-action').forEach((button) => {
+            button.onclick = () => this._runGuidedAction(button.dataset.action);
+        });
+    }
+
+    _runGuidedAction(action) {
+        switch (action) {
+            case 'load':
+                this._loadCurrentLab();
+                break;
+            case 'inputs':
+                this._setLabInputs();
+                break;
+            case 'run':
+                this._runCheck();
+                break;
+            case 'experiment':
+                this._applyExperiment();
+                break;
+            case 'play':
+                if (this.app.previewCircuit) {
+                    this.app.previewCircuit();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    _renderExperiments(lab) {
+        const panel = this.container.querySelector('#experiment-panel');
+        const select = this.container.querySelector('#exp-select');
+        const experiments = lab.experiments || [];
+
+        if (!experiments.length) {
+            panel.style.display = 'none';
+            return;
+        }
+
+        panel.style.display = 'block';
+        select.innerHTML = experiments
+            .map((exp) => `<option value="${exp.id}">${exp.label}</option>`)
+            .join('');
+        this._refreshExperimentNote();
+    }
+
+    _refreshExperimentNote() {
+        const lab = LABS[this.currentLabId];
+        if (!lab || !lab.experiments) return;
+
+        const selectedId = this.container.querySelector('#exp-select').value;
+        const scenario = lab.experiments.find((exp) => exp.id === selectedId);
+        this.container.querySelector('#exp-note').textContent = scenario?.note || '';
+    }
+
+    _applyExperiment() {
+        const lab = LABS[this.currentLabId];
+        if (!lab || !lab.experiments?.length) return;
+
+        const selectedId = this.container.querySelector('#exp-select').value;
+        const scenario = lab.experiments.find((exp) => exp.id === selectedId);
+        if (!scenario) return;
+
+        if (scenario.params?.theta !== undefined) {
+            this._setThetaUI(scenario.params.theta);
+        }
+
+        this._loadCurrentLab();
+
+        if (scenario.inputs) {
+            this.app.setInputs(scenario.inputs);
+        } else {
+            this._setLabInputs();
+        }
+
+        if (this.app.toast) this.app.toast(`Scenario: ${scenario.label}`);
+    }
+
+    _setThetaUI(val) {
+        const slider = this.container.querySelector('#theta-slider');
+        const label = this.container.querySelector('#theta-val');
+        slider.value = val;
+        label.textContent = String(val);
+    }
+
     _loadCurrentLab() {
         if (!this.currentLabId) return;
         const lab = LABS[this.currentLabId];
-
-        // Get current params from UI if applicable
         const params = this._getUIParams(lab);
-
         const circuitData = lab.getCircuit(params);
         this.app.loadCircuit(circuitData);
     }
@@ -149,50 +272,53 @@ export class LearnDrawer {
     }
 
     _updateLabParams(val) {
-        // Just reload circuit with new param if it's dynamic
-        // "Real-time" update might be too aggressive if user is dragging?
-        // Let's just update internal state, and let user click "Load Lab" again?
-        // OR better: auto-reload circuit if it's lightweight.
-        // Labs.js getCircuit is fast.
+        if (!this.currentLabId) return;
+        const lab = LABS[this.currentLabId];
+        if (!lab.getCircuit) return;
 
-        if (this.currentLabId) {
-            const lab = LABS[this.currentLabId];
-            if (lab.getCircuit) {
-                // We need to merge existing params with new val
-                // Only theta supported now
-                const params = { ...lab.params, theta: val };
-                const circuitData = lab.getCircuit(params);
-                this.app.loadCircuit(circuitData);
-            }
-        }
+        const params = { ...lab.params, theta: val };
+        this.app.loadCircuit(lab.getCircuit(params));
     }
 
     _getUIParams(lab) {
         if (lab.params && lab.params.theta !== undefined) {
-            const val = parseFloat(document.getElementById('theta-slider').value);
+            const val = parseFloat(this.container.querySelector('#theta-slider').value);
             return { ...lab.params, theta: val };
         }
         return lab.params || {};
     }
 
-    async _runCheck() {
+    _renderInsight(counts, params) {
+        const lab = LABS[this.currentLabId];
+        const box = this.container.querySelector('#insight-box');
+
+        if (!lab?.getInsight) {
+            box.innerHTML = '';
+            return;
+        }
+
+        const insight = lab.getInsight(counts, params);
+        const details = (insight.details || []).map((line) => `<li>${line}</li>`).join('');
+
+        box.innerHTML = `
+            <div class="insight-title">${insight.headline || 'Insight'}</div>
+            <ul class="insight-list">${details}</ul>
+        `;
+    }
+
+    _runCheck() {
         if (!this.currentLabId) return;
         const lab = LABS[this.currentLabId];
-
-        // 1. Run Shots
         const shots = lab.recommendedShots || 1024;
-        // Call app API. It might be async if animation used, but usually runShots is sync calc + async UI.
-        // Actually runShots returns counts immediately in my previous code?
-        // Let's check controls.js in next step. If it doesn't return, we need to refactor controls.js
-        const counts = this.app.runShots(shots);
 
-        // 2. Check
+        const counts = this.app.runShots(shots);
         const params = this._getUIParams(lab);
         const result = lab.check(counts, params);
 
-        // 3. Display
         const resBox = this.container.querySelector('#check-result');
         resBox.textContent = result.message;
         resBox.className = 'check-result ' + (result.passed ? 'pass' : 'fail');
+
+        this._renderInsight(counts, params);
     }
 }
