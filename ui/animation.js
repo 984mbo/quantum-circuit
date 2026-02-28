@@ -19,6 +19,7 @@ export class AnimationController {
         this.baseStepDuration = 800; // ms
 
         this._timer = null;
+        this._pulseRaf = null;
         this.onStateChange = null; // callback for UI buttons
     }
 
@@ -57,13 +58,14 @@ export class AnimationController {
         if (this.onStateChange) this.onStateChange(this.isPlaying, false);
 
         this._scheduleNext();
-        this._scheduleNext();
     }
 
     pause() {
         this.isPlaying = false;
         if (this._timer) clearTimeout(this._timer);
         this._timer = null;
+        if (this._pulseRaf) cancelAnimationFrame(this._pulseRaf);
+        this._pulseRaf = null;
         if (this.onStateChange) this.onStateChange(this.isPlaying, false);
     }
 
@@ -107,6 +109,11 @@ export class AnimationController {
         if (step.col >= 0) {
             console.log('[Anim] Pulse col', step.col);
             this.canvas.setPulseColumn(step.col);
+            if (this.isPlaying) {
+                this._startPulseTween(step.col);
+            } else {
+                this.canvas.setPulseProgress(1);
+            }
 
             // Trigger Glow for gates in this column
             const gateIds = step.appliedGates.map(g => g.id);
@@ -136,5 +143,28 @@ export class AnimationController {
                 }
             });
         }
+    }
+
+    _startPulseTween(col) {
+        if (this._pulseRaf) cancelAnimationFrame(this._pulseRaf);
+        this._pulseRaf = null;
+
+        const duration = this.baseStepDuration / this.speed;
+        const start = performance.now();
+        this.canvas.setPulseColumn(col);
+        this.canvas.setPulseProgress(0);
+
+        const tick = (now) => {
+            if (!this.isPlaying) return;
+            const t = Math.min(1, (now - start) / duration);
+            this.canvas.setPulseProgress(t);
+            if (t < 1) {
+                this._pulseRaf = requestAnimationFrame(tick);
+            } else {
+                this._pulseRaf = null;
+            }
+        };
+
+        this._pulseRaf = requestAnimationFrame(tick);
     }
 }
