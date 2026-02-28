@@ -18,9 +18,11 @@ export class DragDropHandler {
         this.onUpdate = onUpdate;
 
         this.clickModeType = null;
+        this._skipNextClick = false;
 
         this._initDnD();
         this._initClickPlacement();
+        this._initGateMoveDrag();
         this._initControlDrag();
         this._initDoubleClick();
         this._initSelection();
@@ -127,6 +129,10 @@ export class DragDropHandler {
 
         // Canvas click
         this.canvas.svg.addEventListener('click', (e) => {
+            if (this._skipNextClick) {
+                this._skipNextClick = false;
+                return;
+            }
             if (!this.clickModeType) return;
 
             const pos = this.canvas.getGridPos(e.clientX, e.clientY);
@@ -138,6 +144,173 @@ export class DragDropHandler {
                 // If we are in placement mode, click places. If not, click selects.
             }
         });
+    }
+
+    _initGateMoveDrag() {
+        let drag = null;
+
+        this.canvas.svg.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return; // left click only
+            if (this.clickModeType) return; // placing mode disabled
+            if (e.target.closest('.control-dot')) return; // handled by control drag
+
+            const group = e.target.closest('.gate-group');
+            if (!group) return;
+            e.preventDefault();
+
+            const gateId = parseInt(group.dataset.gateId);
+            const gate = this.circuit.gates.find((g) => g.id === gateId);
+            if (!gate) return;
+
+            const allQubits = gate.allQubits;
+            const anchorQubit = Math.min(...allQubits);
+            const startPos = this.canvas.getGridPos(e.clientX, e.clientY);
+
+            drag = {
+                gateId,
+                gate,
+                startX: e.clientX,
+                startY: e.clientY,
+                anchorQubit,
+                pointerColOffset: startPos ? (startPos.col - gate.col) : 0,
+                pointerQubitOffset: startPos ? (startPos.qubit - anchorQubit) : 0,
+                lastPos: startPos || null,
+                active: false
+            };
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!drag) return;
+
+            const dx = e.clientX - drag.startX;
+            const dy = e.clientY - drag.startY;
+            const moved = Math.hypot(dx, dy);
+
+            if (!drag.active && moved > 5) {
+                drag.active = true;
+                this.container.classList.add('dragging-gate');
+                this.canvas.svg
+                    .querySelector(`.gate-group[data-gate-id="${drag.gateId}"]`)
+                    ?.classList.add('dragging');
+            }
+
+            if (!drag.active) return;
+
+            const pos = this.canvas.getGridPos(e.clientX, e.clientY);
+            if (pos) {
+                drag.lastPos = pos;
+                this._showDropHighlight({ col: pos.col, qubit: pos.qubit });
+            } else {
+                this._hideDropHighlight();
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (!drag) return;
+
+            const wasActive = drag.active;
+            if (wasActive) {
+                this._skipNextClick = true;
+                const group = this.canvas.svg.querySelector(`.gate-group[data-gate-id="${drag.gateId}"]`);
+                if (group) group.classList.remove('dragging');
+                this.container.classList.remove('dragging-gate');
+                this._hideDropHighlight();
+
+                const pos = this.canvas.getGridPos(e.clientX, e.clientY) || drag.lastPos;
+                if (pos) {
+                    try {
+                        const targetCol = Math.max(0, pos.col - drag.pointerColOffset);
+                        const targetAnchorQubit = pos.qubit - drag.pointerQubitOffset;
+                        const dir = Math.sign(targetCol - drag.gate.col) || 1;
+                        this._moveGateSmart(drag.gateId, targetCol, targetAnchorQubit, dir);
+                        this.canvas.selectedGateId = drag.gateId;
+                        this.canvas.render();
+                        this.onUpdate();
+                    } catch (err) {
+                        // Fallback: use raw drop cell as anchor.
+                        try {
+                            const rawCol = Math.max(0, pos.col);
+                            const dir = Math.sign(rawCol - drag.gate.col) || 1;
+                            this._moveGateSmart(drag.gateId, rawCol, pos.qubit, dir);
+                            this.canvas.selectedGateId = drag.gateId;
+                            this.canvas.render();
+                            this.onUpdate();
+                        } catch (err2) {
+                            console.warn('[DnD] Gate move rejected:', err2.message);
+                        }
+                    }
+                }
+            }
+
+            drag = null;
+        });
+    }
+
+    _moveGateSmart(gateId, col, anchorQubit, preferredDir = 1) {
+        try {
+            this._moveGateTo(gateId, col, anchorQubit);
+            return;
+        } catch (err) {
+            if (!String(err.message).includes('collision')) throw err;
+        }
+
+        const maxTry = Math.max(this.circuit.numCols + 2, col + 6);
+        for (let offset = 1; offset <= maxTry; offset++) {
+            const c1 = col + offset * preferredDir;
+            if (c1 >= 0) {
+                try {
+                    this._moveGateTo(gateId, c1, anchorQubit);
+                    return;
+                } catch (_) { }
+            }
+
+            const c2 = col - offset * preferredDir;
+            if (c2 >= 0) {
+                try {
+                    this._moveGateTo(gateId, c2, anchorQubit);
+                    return;
+                } catch (_) { }
+            }
+        }
+
+        throw new Error('No available column to move');
+    }
+
+    _moveGateTo(gateId, newCol, newAnchorQubit) {
+        const gate = this.circuit.gates.find((g) => g.id === gateId);
+        if (!gate) throw new Error('Gate not found');
+
+        const oldTargets = [...gate.targets];
+        const oldControls = [...gate.controls];
+        const oldAnchorQubit = Math.min(...gate.allQubits);
+        const dQ = newAnchorQubit - oldAnchorQubit;
+
+        const movedTargets = oldTargets.map((q) => q + dQ);
+        const movedControls = oldControls.map((q) => q + dQ);
+        const occupied = new Set([...movedTargets, ...movedControls]);
+
+        for (const q of occupied) {
+            if (q < 0 || q >= this.circuit.numQubits) {
+                throw new Error('Move out of wire range');
+            }
+        }
+
+        for (const other of this.circuit.getGatesAtCol(newCol)) {
+            if (other.id === gate.id) continue;
+            for (const q of other.allQubits) {
+                if (occupied.has(q)) {
+                    throw new Error('Cell collision on target column');
+                }
+            }
+        }
+
+        gate.targets = movedTargets;
+        gate.controls = movedControls;
+        gate.col = newCol;
+
+        if (newCol >= this.circuit.numCols - 1) {
+            this.circuit.numCols = newCol + 2;
+        }
     }
 
     _tryPlaceGate(type, col, startQubit) {
@@ -193,6 +366,10 @@ export class DragDropHandler {
     _initSelection() {
         // Canvas click to select gate (if not in placement mode)
         this.canvas.svg.addEventListener('click', (e) => {
+            if (this._skipNextClick) {
+                this._skipNextClick = false;
+                return;
+            }
             if (this.clickModeType) return;
 
             // Check if clicked ON a gate

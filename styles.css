@@ -1116,6 +1116,19 @@ body {
     animation: flow-particle 0.6s ease-out;
 }
 
+.wire-current-comet {
+    animation: none;
+}
+
+.circuit-container.dragging-gate {
+    cursor: grabbing;
+}
+
+.gate-group.dragging {
+    opacity: 0.65;
+    filter: url(#glow);
+}
+
 /* ─── Toast ─────────────────────────────────────────────────── */
 .toast {
     position: fixed;
@@ -1963,4 +1976,742 @@ body {
         stroke-dashoffset: 0;
         opacity: 1;
     }
+}
+
+/* ============================================================
+   Apple-like Preview Theme (non-destructive overrides)
+   ============================================================ */
+
+:root {
+    --bg-primary: #f5f5f7;
+    --bg-secondary: rgba(255, 255, 255, 0.72);
+    --bg-panel: rgba(255, 255, 255, 0.78);
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --bg-input: rgba(245, 245, 247, 0.88);
+    --border: rgba(16, 24, 40, 0.12);
+    --border-bright: rgba(16, 24, 40, 0.2);
+    --text-primary: #111827;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --accent-blue: #0071e3;
+    --accent-cyan: #0071e3;
+    --accent-gold: #f59e0b;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 22px;
+    --font-main: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-mono: 'SF Mono', ui-monospace, Menlo, Monaco, Consolas, monospace;
+}
+
+body {
+    background:
+        radial-gradient(circle at 8% -10%, rgba(0, 113, 227, 0.12), transparent 38%),
+        radial-gradient(circle at 100% 0%, rgba(148, 163, 184, 0.1), transparent 40%),
+        var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.app-header {
+    height: 64px;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.66);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.app-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+
+.title-icon {
+    color: var(--accent-blue);
+    filter: none;
+}
+
+.demo-buttons {
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+.demo-btn {
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+}
+
+.demo-btn:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: var(--border);
+    color: #111827;
+}
+
+.header-right {
+    gap: 8px;
+}
+
+.icon-btn,
+.tool-btn {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.86);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    font-weight: 600;
+}
+
+.icon-btn {
+    padding: 8px 14px;
+}
+
+.icon-btn:hover,
+.tool-btn:hover {
+    background: #fff;
+    color: #111827;
+    border-color: rgba(0, 113, 227, 0.34);
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
+}
+
+.tool-btn.accent,
+.tool-btn.primary,
+.play-btn.primary {
+    background: linear-gradient(180deg, #1d8cff 0%, #0071e3 100%);
+    color: #fff;
+    border-color: rgba(0, 113, 227, 0.75);
+    box-shadow: 0 10px 20px rgba(0, 113, 227, 0.25);
+}
+
+.tool-btn.accent:hover,
+.tool-btn.primary:hover,
+.play-btn.primary:hover {
+    background: linear-gradient(180deg, #3a9bff 0%, #0a80f6 100%);
+    color: #fff;
+}
+
+.app-main {
+    height: calc(100vh - 64px);
+    padding: 10px;
+    gap: 10px;
+    background: transparent;
+}
+
+.panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.toolbar,
+.panel-header {
+    background: rgba(255, 255, 255, 0.62);
+    border-bottom: 1px solid var(--border);
+}
+
+.toolbar {
+    height: 52px;
+    padding: 8px 14px;
+}
+
+.panel-title,
+.sidebar-label {
+    color: #4b5563;
+    font-size: 11px;
+}
+
+.step-info {
+    color: #0b63cc;
+}
+
+.tool-select,
+.tool-input,
+.experiment-row select,
+.experiment-row button,
+.tex-input,
+.matrix-input {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 10px;
+}
+
+.gate-sidebar {
+    width: 154px;
+    background: rgba(255, 255, 255, 0.58);
+    border-right: 1px solid var(--border);
+}
+
+.drag-gate {
+    border-width: 1px;
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.drag-gate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
+}
+
+.circuit-container {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.52) 0%, rgba(245, 247, 250, 0.36) 100%);
+}
+
+.state-tab {
+    background: rgba(255, 255, 255, 0.76);
+    border-color: var(--border);
+    color: var(--text-secondary);
+}
+
+.state-tab.active {
+    background: #fff;
+    color: var(--accent-blue);
+    border-color: rgba(0, 113, 227, 0.34);
+}
+
+.amp-bar-track,
+.hist-bar-track {
+    background: rgba(148, 163, 184, 0.22);
+}
+
+.hist-bar-fill {
+    background: linear-gradient(90deg, #0a84ff, #60a5fa);
+}
+
+.learn-drawer,
+.input-drawer {
+    background: rgba(255, 255, 255, 0.9);
+    border-left: 1px solid var(--border);
+    box-shadow: -16px 0 32px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.drawer-header,
+.learn-header {
+    background: rgba(255, 255, 255, 0.74);
+}
+
+.control-group,
+.guided-panel,
+.experiment-panel,
+.insight-box,
+.preset-preview,
+.bloch-state-preview,
+.tex-preview {
+    background: rgba(255, 255, 255, 0.84);
+    border: 1px solid var(--border);
+}
+
+.toast {
+    background: rgba(255, 255, 255, 0.95);
+    color: #0f172a;
+    border: 1px solid rgba(0, 113, 227, 0.35);
+    box-shadow: 0 14px 24px rgba(15, 23, 42, 0.16);
+}
+
+@media (max-width: 900px) {
+    .app-header {
+        height: auto;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .app-main {
+        height: calc(100vh - 86px);
+        padding: 6px;
+        gap: 6px;
+    }
+
+    .toolbar {
+        height: auto;
+    }
+}
+
+/* Learn Drawer - Apple-like inner consistency */
+.learn-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+
+.learn-content p,
+.learn-content li,
+.learn-content label,
+#lab-desc {
+    color: var(--text-secondary);
+    line-height: 1.55;
+}
+
+.learn-content button {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-secondary);
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    transition: 0.2s ease;
+}
+
+.learn-content button:hover {
+    background: #fff;
+    color: #111827;
+    border-color: rgba(0, 113, 227, 0.34);
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.1);
+}
+
+.learn-content #btn-run-check.primary {
+    background: linear-gradient(180deg, #1d8cff 0%, #0071e3 100%);
+    color: #fff;
+    border-color: rgba(0, 113, 227, 0.7);
+}
+
+.learn-content #btn-run-check.primary:hover {
+    background: linear-gradient(180deg, #3a9bff 0%, #0a80f6 100%);
+}
+
+.learn-content .back-list {
+    margin-bottom: 10px;
+    border-radius: 999px;
+    padding: 6px 12px;
+}
+
+.learn-content .lab-list-items {
+    display: grid;
+    gap: 8px;
+}
+
+.learn-content .lab-item {
+    margin-bottom: 0;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.learn-content .lab-item-title {
+    font-size: 13px;
+    color: #0f172a;
+}
+
+.learn-content .lab-item-meta {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.learn-content .lab-tag {
+    background: rgba(0, 113, 227, 0.08);
+    border-color: rgba(0, 113, 227, 0.24);
+    color: #0b63cc;
+    font-weight: 600;
+}
+
+.learn-content .guided-action {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.learn-content .experiment-row {
+    align-items: center;
+}
+
+.learn-content .experiment-row select,
+.learn-content .experiment-row button {
+    border-radius: 12px;
+    min-height: 36px;
+}
+
+.learn-content .check-result {
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.learn-content .check-result.pass {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #047857;
+}
+
+.learn-content .check-result.fail {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.28);
+    color: #b91c1c;
+}
+
+.learn-content .insight-box {
+    border-radius: 12px;
+    background: rgba(0, 113, 227, 0.06);
+}
+
+.learn-content .insight-title {
+    color: #0b63cc;
+    font-size: 13px;
+}
+
+.learn-content .math-block {
+    background: rgba(15, 23, 42, 0.88);
+    color: #e5e7eb;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.comparison-panel {
+    margin-top: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-card);
+    padding: 10px;
+}
+
+.comparison-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.comparison-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.comparison-log {
+    overflow-x: auto;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.comparison-table th,
+.comparison-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 6px 8px;
+    text-align: left;
+    white-space: nowrap;
+    color: var(--text-secondary);
+}
+
+.comparison-table th {
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.comparison-empty {
+    color: var(--text-muted);
+    font-size: 11px;
+    padding: 8px 4px;
+}
+
+.cmp-pass {
+    color: #4ade80 !important;
+    font-weight: 700;
+}
+
+.cmp-fail {
+    color: #f87171 !important;
+    font-weight: 700;
+}
+
+/* ============================================================
+   Dark Theme Override (reduce glare, keep Apple-like clarity)
+   ============================================================ */
+
+:root {
+    --bg-primary: #0b0d12;
+    --bg-secondary: rgba(20, 24, 33, 0.78);
+    --bg-panel: rgba(17, 21, 29, 0.86);
+    --bg-card: rgba(255, 255, 255, 0.06);
+    --bg-hover: rgba(255, 255, 255, 0.12);
+    --bg-input: rgba(9, 12, 18, 0.78);
+    --border: rgba(255, 255, 255, 0.12);
+    --border-bright: rgba(255, 255, 255, 0.2);
+    --text-primary: #f3f4f6;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --accent-blue: #0a84ff;
+    --accent-cyan: #0a84ff;
+}
+
+body {
+    background:
+        radial-gradient(circle at 8% -10%, rgba(10, 132, 255, 0.18), transparent 34%),
+        radial-gradient(circle at 100% 0%, rgba(71, 85, 105, 0.2), transparent 40%),
+        var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.app-header,
+.toolbar,
+.panel-header {
+    background: rgba(17, 22, 31, 0.72);
+    border-color: var(--border);
+}
+
+.app-title {
+    color: #f9fafb;
+}
+
+.demo-buttons {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: none;
+}
+
+.demo-btn {
+    color: var(--text-secondary);
+}
+
+.demo-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.icon-btn,
+.tool-btn,
+.learn-content button {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    border-color: var(--border);
+    box-shadow: none;
+}
+
+.icon-btn:hover,
+.tool-btn:hover,
+.learn-content button:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    border-color: rgba(10, 132, 255, 0.45);
+    box-shadow: 0 10px 18px rgba(10, 132, 255, 0.16);
+}
+
+.tool-btn.accent,
+.tool-btn.primary,
+.play-btn.primary,
+.learn-content #btn-run-check.primary {
+    background: linear-gradient(180deg, #2895ff 0%, #0a84ff 100%);
+    color: #fff;
+    border-color: rgba(10, 132, 255, 0.75);
+}
+
+.panel {
+    border-color: var(--border);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.34);
+}
+
+.gate-sidebar {
+    background: rgba(12, 16, 24, 0.66);
+}
+
+.drag-gate {
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: none;
+}
+
+.circuit-container {
+    background: linear-gradient(180deg, rgba(18, 24, 35, 0.6) 0%, rgba(8, 11, 17, 0.7) 100%);
+}
+
+.state-tab {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+}
+
+.state-tab.active {
+    background: rgba(10, 132, 255, 0.16);
+    color: #8ec5ff;
+    border-color: rgba(10, 132, 255, 0.45);
+}
+
+.amp-bar-track,
+.hist-bar-track {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.learn-drawer,
+.input-drawer {
+    background: rgba(13, 17, 25, 0.9);
+    box-shadow: -16px 0 32px rgba(0, 0, 0, 0.42);
+}
+
+.drawer-header,
+.learn-header {
+    background: rgba(18, 22, 31, 0.75);
+}
+
+.control-group,
+.guided-panel,
+.experiment-panel,
+.insight-box,
+.preset-preview,
+.bloch-state-preview,
+.tex-preview {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--border);
+}
+
+.learn-content h3,
+.learn-content .lab-item-title {
+    color: #f3f4f6;
+}
+
+.learn-content .lab-item,
+.learn-content .guided-action {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.learn-content .lab-tag {
+    background: rgba(10, 132, 255, 0.16);
+    border-color: rgba(10, 132, 255, 0.36);
+    color: #93c5fd;
+}
+
+.learn-content .check-result.pass {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.42);
+    color: #6ee7b7;
+}
+
+.learn-content .check-result.fail {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.38);
+    color: #fca5a5;
+}
+
+.learn-content .insight-box {
+    background: rgba(10, 132, 255, 0.12);
+}
+
+.learn-content .insight-title {
+    color: #93c5fd;
+}
+
+.toast {
+    background: rgba(17, 22, 31, 0.94);
+    color: #f3f4f6;
+    border-color: rgba(10, 132, 255, 0.5);
+    box-shadow: 0 14px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Dark mode readability tuning for gray buttons */
+.demo-btn,
+.icon-btn:not(.primary),
+.tool-btn:not(.primary):not(.accent),
+.learn-content button:not(.primary) {
+    color: #e5e7eb;
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+}
+
+.demo-btn:hover,
+.icon-btn:not(.primary):hover,
+.tool-btn:not(.primary):not(.accent):hover,
+.learn-content button:not(.primary):hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(10, 132, 255, 0.45);
+}
+
+/* Dark form controls readability (Probability / shots / Learn selects) */
+.tool-select,
+.tool-input,
+#measure-mode,
+#shots-input,
+.learn-content select,
+.learn-content input[type="number"],
+.learn-content input[type="text"],
+.learn-content input[type="range"],
+.experiment-row select {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.tool-select:hover,
+.tool-input:hover,
+#measure-mode:hover,
+#shots-input:hover,
+.learn-content select:hover,
+.learn-content input[type="number"]:hover,
+.learn-content input[type="text"]:hover,
+.experiment-row select:hover {
+    border-color: rgba(10, 132, 255, 0.45);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.tool-select:focus,
+.tool-input:focus,
+#measure-mode:focus,
+#shots-input:focus,
+.learn-content select:focus,
+.learn-content input[type="number"]:focus,
+.learn-content input[type="text"]:focus,
+.experiment-row select:focus {
+    outline: none;
+    border-color: rgba(10, 132, 255, 0.7);
+    box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.18);
+}
+
+#measure-mode option,
+.learn-content select option,
+.experiment-row select option {
+    color: #111827;
+    background: #f8fafc;
+}
+
+/* Prevent slider jitter from changing numeric label width */
+.speed-control {
+    gap: 10px;
+}
+
+#speed-slider {
+    width: 76px;
+    flex: 0 0 76px;
+}
+
+#speed-label {
+    display: inline-block;
+    min-width: 3.8ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+}
+
+#param-controls label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+#theta-val {
+    display: inline-block;
+    min-width: 4ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+}
+
+.bloch-angle-val {
+    min-width: 42px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
 }

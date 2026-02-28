@@ -60,10 +60,10 @@ export const LABS = {
             }
         ],
         descriptionHTML: `
-            <p><strong>Hadamard Test</strong> is used to estimate the real part of the expected value of a unitary operator.</p>
-            <p>Circuit: Control qubit (q0) controls the Unitary (CRZ) on target (q1).</p>
-            <p>Adjust <strong>&theta;</strong> to see how interference affects P(|0⟩) on q0.</p>
-            <div class="math-block">P(0) = (1 + Re⟨&psi;|U|&psi;⟩)/2</div>
+            <p><strong>Hadamard Test</strong> は、ユニタリ演算子の期待値の実部を測定確率として読み取るための基本回路です。</p>
+            <p>このラボでは <code>q0</code> を制御ビット、<code>q1</code> を標的ビットとして、位相差が干渉に変換される様子を観察します。</p>
+            <p><strong>theta</strong> を変えると、最終測定の <code>P(q0=0)</code> が連続的に変化します。理論値との一致を確認してください。</p>
+            <div class="math-block">P(0) = (1 + Re⟨&psi;|U|&psi;⟩)/2 = (1 + cos(&pi;&theta;))/2</div>
         `,
         recommendedShots: 1024,
         params: { theta: 0.125 },
@@ -94,13 +94,13 @@ export const LABS = {
             if (Math.abs(p0 - theoretical) < 0.1) {
                 return {
                     passed: true,
-                    message: `PASS: P(0) ≈ ${p0.toFixed(2)} (Expected ~${theoretical.toFixed(2)})`
+                    message: `PASS: 測定値 P(0) ≈ ${p0.toFixed(2)}（理論値 ${theoretical.toFixed(2)}）`
                 };
             }
 
             return {
                 passed: false,
-                message: `FAIL: P(0) = ${p0.toFixed(2)}. Expected ~${theoretical.toFixed(2)}. Try increasing shots.`
+                message: `FAIL: 測定値 P(0) = ${p0.toFixed(2)}（理論値 ${theoretical.toFixed(2)}）。shots を増やして再検証してください。`
             };
         },
 
@@ -109,11 +109,11 @@ export const LABS = {
             const measured = q0ProbabilityZero(counts);
             const expected = (1 + Math.cos(Math.PI * theta)) / 2;
             return {
-                headline: 'Interference Readout',
+                headline: '干渉の読み取り結果',
                 details: [
-                    `Measured P(q0=0): ${measured.toFixed(3)}`,
-                    `Theoretical P(q0=0): ${expected.toFixed(3)}`,
-                    `Top outcomes: ${summarizeTopOutcomes(counts) || 'N/A'}`
+                    `測定 P(q0=0): ${measured.toFixed(3)}`,
+                    `理論 P(q0=0): ${expected.toFixed(3)}`,
+                    `主要ビット列: ${summarizeTopOutcomes(counts) || 'N/A'}`
                 ]
             };
         }
@@ -155,9 +155,10 @@ export const LABS = {
             }
         ],
         descriptionHTML: `
-            <p><strong>SWAP Test</strong> checks the overlap (similarity) between two states |&psi;⟩ and |&phi;⟩.</p>
-            <p>P(0) = 0.5 + 0.5 |⟨&psi;|&phi;⟩|²</p>
-            <p>If states are identical, P(0)=1. If orthogonal, P(0)=0.5.</p>
+            <p><strong>SWAP Test</strong> は、2つの量子状態 <code>|&psi;⟩</code> と <code>|&phi;⟩</code> の重なりを測る回路です。</p>
+            <p>補助ビット <code>q0</code> の測定確率から、状態の類似度を推定できます。</p>
+            <div class="math-block">P(0) = 0.5 + 0.5 |⟨&psi;|&phi;⟩|²</div>
+            <p>同一状態では <code>P(0) ≈ 1</code>、直交状態では <code>P(0) ≈ 0.5</code> になります。</p>
         `,
         recommendedShots: 1024,
         params: {},
@@ -178,18 +179,18 @@ export const LABS = {
             const p0 = q0ProbabilityZero(counts);
             return {
                 passed: true,
-                message: `Measured P(0) = ${p0.toFixed(2)}. (1.0 = Same, 0.5 = Orthogonal)`
+                message: `測定 P(0) = ${p0.toFixed(2)}（1.0に近いほど類似、0.5に近いほど直交）`
             };
         },
         getInsight: (counts) => {
             const p0 = q0ProbabilityZero(counts);
             const overlapSq = Math.max(0, Math.min(1, 2 * p0 - 1));
             return {
-                headline: 'State Overlap Estimate',
+                headline: '状態重なりの推定',
                 details: [
-                    `Measured P(q0=0): ${p0.toFixed(3)}`,
-                    `Estimated |<psi|phi>|^2: ${overlapSq.toFixed(3)}`,
-                    `Top outcomes: ${summarizeTopOutcomes(counts) || 'N/A'}`
+                    `測定 P(q0=0): ${p0.toFixed(3)}`,
+                    `推定 |<psi|phi>|^2: ${overlapSq.toFixed(3)}`,
+                    `主要ビット列: ${summarizeTopOutcomes(counts) || 'N/A'}`
                 ]
             };
         }
@@ -225,9 +226,9 @@ export const LABS = {
             }
         ],
         descriptionHTML: `
-            <p>Quantum Fourier Transform on 3 qubits.</p>
-            <p>Input basis |x⟩ transforms to Fourier basis.</p>
-            <p>Try setting input to |000> -> HHH result.</p>
+            <p><strong>QFT (3量子ビット)</strong> は、計算基底で表した状態を周波数表現へ変換します。</p>
+            <p>入力状態を変えると、測定ヒストグラムのピーク配置が変化します。</p>
+            <p>まず <code>|000⟩</code> を基準に実行し、その後 <code>|001⟩</code> などへ切り替えて分布の差を比較してください。</p>
         `,
         recommendedShots: 1024,
         params: {},
@@ -251,14 +252,14 @@ export const LABS = {
         check: (counts) => {
             return {
                 passed: true,
-                message: `Top outcomes: ${summarizeTopOutcomes(counts) || 'N/A'}`
+                message: `主要ビット列: ${summarizeTopOutcomes(counts) || 'N/A'}`
             };
         },
         getInsight: (counts) => {
             return {
-                headline: 'Distribution Snapshot',
+                headline: '分布の観察結果',
                 details: [
-                    `Top outcomes: ${summarizeTopOutcomes(counts) || 'N/A'}`,
+                    `主要ビット列: ${summarizeTopOutcomes(counts) || 'N/A'}`,
                     '入力基底を変えて、ピークの移動パターンを比較してください。'
                 ]
             };
@@ -301,9 +302,9 @@ export const LABS = {
             }
         ],
         descriptionHTML: `
-            <p>Estimate phase &theta; of Unitary U=Rz(2&pi;&theta;).</p>
-            <p>Using 2 precision qubits (q0, q1) and 1 target (q2).</p>
-            <p>If target |1⟩ is eigenstate, we extract &theta;.</p>
+            <p><strong>Phase Estimation</strong> は、ユニタリ演算子の固有位相 <code>&theta;</code> をビット列として読み出すアルゴリズムです。</p>
+            <p>このラボでは精度2ビット（<code>q0, q1</code>）で、位相の近似値をヒストグラムから読み取ります。</p>
+            <p><code>theta = 0.25, 0.50, 0.75</code> を切り替え、ピーク位置がどう動くかを比較してください。</p>
         `,
         recommendedShots: 2048,
         params: { theta: 0.25 },
@@ -331,15 +332,15 @@ export const LABS = {
         check: (counts, params) => {
             return {
                 passed: true,
-                message: `theta=${params.theta.toFixed(2)} を表すピーク候補: ${summarizeTopOutcomes(counts) || 'N/A'}`
+                message: `theta=${params.theta.toFixed(2)} のピーク候補: ${summarizeTopOutcomes(counts) || 'N/A'}`
             };
         },
         getInsight: (counts, params) => {
             return {
-                headline: 'Phase Bitstring Readout',
+                headline: '位相ビット列の読み取り',
                 details: [
-                    `theta: ${params.theta.toFixed(2)}`,
-                    `Top outcomes: ${summarizeTopOutcomes(counts) || 'N/A'}`,
+                    `設定 theta: ${params.theta.toFixed(2)}`,
+                    `主要ビット列: ${summarizeTopOutcomes(counts) || 'N/A'}`,
                     '最大カウントのビット列を、小数2進表示と対応づけて確認してください。'
                 ]
             };

@@ -21,6 +21,7 @@ export class CircuitCanvas {
 
         // Animation state
         this.pulseCol = -1;
+        this.pulseProgress = 1;
         this.pulseColor = '#ffffff';
         this.glowingGates = new Set();
 
@@ -345,6 +346,11 @@ export class CircuitCanvas {
         this._renderCurrentFlow();
     }
 
+    setPulseProgress(progress) {
+        this.pulseProgress = Math.max(0, Math.min(1, progress));
+        this._renderCurrentFlow();
+    }
+
     setGlowing(gateIds) {
         // Efficiently toggle classes without re-rendering everything
         const ids = new Set(gateIds);
@@ -364,6 +370,7 @@ export class CircuitCanvas {
 
     clearPulse() {
         this.pulseCol = -1;
+        this.pulseProgress = 1;
         this.glowingGates.clear();
         const flow = this.svg.querySelector('.current-flow');
         if (flow) flow.remove();
@@ -404,14 +411,15 @@ export class CircuitCanvas {
             this.svg.appendChild(g);
         }
 
-        const col = this.pulseCol;
-        const wireEndX = this.colX(col); // Current reaches center of column
+        const startX = WIRE_X_START - 20;
+        const phase = Math.max(0, this.pulseCol + this.pulseProgress);
+        const wireEndX = startX + phase * CELL_W;
 
         for (let q = 0; q < this.circuit.numQubits; q++) {
             let red = 255, green = 255, blue = 255;
 
             // Calculate cumulative color up to current column
-            for (let c = 0; c < col; c++) {
+            for (let c = 0; c <= this.pulseCol; c++) {
                 const gates = this.circuit.getGatesAtCol(c);
                 gates.forEach(gate => {
                     if (gate.allQubits.includes(q)) {
@@ -426,36 +434,48 @@ export class CircuitCanvas {
 
             const finalColor = `rgb(${Math.round(red)},${Math.round(green)},${Math.round(blue)})`;
             const y = this.qubitY(q);
-            const startX = WIRE_X_START - 20;
 
-            // Draw trail
-            const trailId = `trail-${q}`;
-            let grad = document.getElementById(trailId);
+            // Faint traveled line
+            g.appendChild(this._el('line', {
+                x1: startX, y1: y, x2: wireEndX, y2: y,
+                stroke: finalColor, 'stroke-width': 2.5, 'stroke-linecap': 'round',
+                'stroke-opacity': '0.18'
+            }));
+
+            // Comet tail (short gradient segment near head)
+            const tailLen = 140;
+            const tailStart = Math.max(startX, wireEndX - tailLen);
+            const tailId = `tail-comet-${q}`;
+            let grad = document.getElementById(tailId);
             if (!grad) {
                 const defs = this.svg.querySelector('defs');
                 if (defs) {
-                    grad = this._el('linearGradient', { id: trailId, x1: '0', y1: '0', x2: '1', y2: '0' });
+                    grad = this._el('linearGradient', {
+                        id: tailId,
+                        gradientUnits: 'userSpaceOnUse'
+                    });
                     defs.appendChild(grad);
                 }
             }
-            // Update gradient stop color
             if (grad) {
+                grad.setAttribute('x1', tailStart);
+                grad.setAttribute('y1', y);
+                grad.setAttribute('x2', wireEndX);
+                grad.setAttribute('y2', y);
                 grad.innerHTML = '';
-                grad.appendChild(this._el('stop', { offset: '0%', 'stop-color': '#ffffff', 'stop-opacity': '0' }));
+                grad.appendChild(this._el('stop', { offset: '0%', 'stop-color': finalColor, 'stop-opacity': '0' }));
+                grad.appendChild(this._el('stop', { offset: '60%', 'stop-color': finalColor, 'stop-opacity': '0.35' }));
                 grad.appendChild(this._el('stop', { offset: '100%', 'stop-color': finalColor, 'stop-opacity': '1' }));
             }
 
-            // Head pulse
-            // We use a trick: line with gradient for trail
             g.appendChild(this._el('line', {
-                x1: startX, y1: y, x2: wireEndX, y2: y,
-                stroke: `url(#${trailId})`, 'stroke-width': 4, 'stroke-linecap': 'round',
-                class: 'wire-current' // triggers animation
+                x1: tailStart, y1: y, x2: wireEndX, y2: y,
+                stroke: `url(#${tailId})`, 'stroke-width': 6, 'stroke-linecap': 'round'
             }));
 
-            // Head glow
+            // Comet head
             g.appendChild(this._el('circle', {
-                cx: wireEndX, cy: y, r: 4, fill: finalColor,
+                cx: wireEndX, cy: y, r: 5, fill: finalColor,
                 filter: 'url(#glow-current)'
             }));
         }

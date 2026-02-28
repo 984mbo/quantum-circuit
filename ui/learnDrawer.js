@@ -13,6 +13,7 @@ export class LearnDrawer {
         this.isOpen = false;
         this.currentLabId = null;
         this.container = null;
+        this.runHistoryByLab = {};
 
         this._init();
     }
@@ -84,6 +85,13 @@ export class LearnDrawer {
 
                     <div id="check-result" class="check-result"></div>
                     <div id="insight-box" class="insight-box"></div>
+                    <div class="comparison-panel">
+                        <div class="comparison-header">
+                            <div class="comparison-title">Pattern Compare</div>
+                            <button id="btn-clear-history">Clear History</button>
+                        </div>
+                        <div id="comparison-log" class="comparison-log"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -103,6 +111,7 @@ export class LearnDrawer {
         drawer.querySelector('#btn-load-lab').onclick = () => this._loadCurrentLab();
         drawer.querySelector('#btn-set-inputs').onclick = () => this._setLabInputs();
         drawer.querySelector('#btn-run-check').onclick = () => this._runCheck();
+        drawer.querySelector('#btn-clear-history').onclick = () => this._clearHistory();
 
         drawer.querySelector('#btn-apply-exp').onclick = () => this._applyExperiment();
         drawer.querySelector('#exp-select').onchange = () => this._refreshExperimentNote();
@@ -145,6 +154,7 @@ export class LearnDrawer {
         detail.querySelector('#check-result').textContent = '';
         detail.querySelector('#check-result').className = 'check-result';
         detail.querySelector('#insight-box').innerHTML = '';
+        this._renderHistory();
 
         this._renderIntuition(lab);
         this._renderGuidedActions(lab);
@@ -306,6 +316,79 @@ export class LearnDrawer {
         `;
     }
 
+    _getCurrentScenarioLabel() {
+        const lab = LABS[this.currentLabId];
+        if (!lab?.experiments?.length) return 'Custom';
+        const selectedId = this.container.querySelector('#exp-select')?.value;
+        const scenario = lab.experiments.find((exp) => exp.id === selectedId);
+        return scenario?.label || 'Custom';
+    }
+
+    _appendHistory(result, params, counts) {
+        if (!this.currentLabId) return;
+        const rows = this.runHistoryByLab[this.currentLabId] || [];
+        const shots = Object.values(counts).reduce((a, b) => a + b, 0);
+        const lab = LABS[this.currentLabId];
+        const insight = lab.getInsight ? lab.getInsight(counts, params) : null;
+        const metric = insight?.details?.[0] || '-';
+
+        rows.push({
+            scenario: this._getCurrentScenarioLabel(),
+            theta: params?.theta,
+            shots,
+            status: result.passed ? 'PASS' : 'FAIL',
+            metric
+        });
+
+        if (rows.length > 8) rows.shift();
+        this.runHistoryByLab[this.currentLabId] = rows;
+    }
+
+    _clearHistory() {
+        if (!this.currentLabId) return;
+        this.runHistoryByLab[this.currentLabId] = [];
+        this._renderHistory();
+        if (this.app.toast) this.app.toast('History cleared');
+    }
+
+    _renderHistory() {
+        const log = this.container.querySelector('#comparison-log');
+        if (!log || !this.currentLabId) return;
+
+        const rows = this.runHistoryByLab[this.currentLabId] || [];
+        if (!rows.length) {
+            log.innerHTML = '<div class="comparison-empty">Run Shots & Check の結果がここに蓄積されます。</div>';
+            return;
+        }
+
+        const body = rows.map((r, idx) => `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${r.scenario}</td>
+                <td>${r.theta === undefined ? '-' : r.theta.toFixed(2)}</td>
+                <td>${r.shots}</td>
+                <td class="${r.status === 'PASS' ? 'cmp-pass' : 'cmp-fail'}">${r.status}</td>
+                <td>${r.metric}</td>
+            </tr>
+        `).join('');
+
+        log.innerHTML = `
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Scenario</th>
+                        <th>theta</th>
+                        <th>shots</th>
+                        <th>status</th>
+                        <th>key metric</th>
+                    </tr>
+                </thead>
+                <tbody>${body}</tbody>
+            </table>
+        `;
+    }
+
     _runCheck() {
         if (!this.currentLabId) return;
         const lab = LABS[this.currentLabId];
@@ -320,5 +403,7 @@ export class LearnDrawer {
         resBox.className = 'check-result ' + (result.passed ? 'pass' : 'fail');
 
         this._renderInsight(counts, params);
+        this._appendHistory(result, params, counts);
+        this._renderHistory();
     }
 }
