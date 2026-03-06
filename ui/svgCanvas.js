@@ -313,6 +313,65 @@ export class CircuitCanvas {
             }
             drawCross(y1);
             drawCross(y2);
+        } else if (gate.type === 'Measure') {
+            // Measurement gate — meter icon (semicircle + needle)
+            const y = this.qubitY(gate.targets[0]);
+            group.appendChild(box(y));
+
+            const meterColor = isActive ? '#ffffff' : color;
+
+            // Semicircle arc (bottom half of meter dial)
+            const arcR = 12;
+            const arcCY = y + 2;
+            // SVG arc: from left to right of semicircle
+            const arcPath = `M ${x - arcR} ${arcCY} A ${arcR} ${arcR} 0 0 1 ${x + arcR} ${arcCY}`;
+            group.appendChild(this._el('path', {
+                d: arcPath,
+                fill: 'none',
+                stroke: meterColor,
+                'stroke-width': 2,
+                'stroke-linecap': 'round'
+            }));
+
+            // Baseline of the meter
+            group.appendChild(this._el('line', {
+                x1: x - arcR - 2, y1: arcCY,
+                x2: x + arcR + 2, y2: arcCY,
+                stroke: meterColor,
+                'stroke-width': 1.5
+            }));
+
+            // Needle pointing to upper-right (~45 degrees)
+            const needleLen = arcR - 1;
+            const needleAngle = -45 * (Math.PI / 180); // 45 degrees from horizontal
+            const nx = x + needleLen * Math.cos(needleAngle);
+            const ny = arcCY + needleLen * Math.sin(needleAngle);
+            group.appendChild(this._el('line', {
+                x1: x, y1: arcCY,
+                x2: nx, y2: ny,
+                stroke: meterColor,
+                'stroke-width': 2,
+                'stroke-linecap': 'round'
+            }));
+
+            // Small dot at the needle pivot
+            group.appendChild(this._el('circle', {
+                cx: x, cy: arcCY, r: 2,
+                fill: meterColor
+            }));
+
+            // Arrowhead at needle tip
+            const arrowSize = 3;
+            const arrowAngle1 = needleAngle + 2.5;
+            const arrowAngle2 = needleAngle - 0.6;
+            const ax1 = nx - arrowSize * Math.cos(arrowAngle1);
+            const ay1 = ny - arrowSize * Math.sin(arrowAngle1);
+            const ax2 = nx - arrowSize * Math.cos(arrowAngle2);
+            const ay2 = ny - arrowSize * Math.sin(arrowAngle2);
+            group.appendChild(this._el('polygon', {
+                points: `${nx},${ny} ${ax1},${ay1} ${ax2},${ay2}`,
+                fill: meterColor
+            }));
         } else {
             // Standard single qubit
             const y = this.qubitY(gate.targets[0]);
