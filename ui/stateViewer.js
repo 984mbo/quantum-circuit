@@ -47,7 +47,7 @@ export class StateViewer {
     }
 
     updateState(stateVector, numQubits, history = []) {
-        this._updateDirac(stateVector, numQubits);
+        this._updateDirac(stateVector, numQubits, history);
         this._updateAmplitudes(stateVector, numQubits);
         this._updateMeasurementProbabilities(history, numQubits);
     }
@@ -146,17 +146,80 @@ export class StateViewer {
 
     // ─── Dirac Notation (KaTeX) ───────────────────────────────
 
-    _updateDirac(state, numQubits) {
+    _updateDirac(state, numQubits, history = []) {
         const el = document.getElementById('panel-dirac');
         if (!el) return;
 
-        const texString = stateVectorToTeX(state, numQubits);
+        // If no history, show single state (fallback)
+        if (!history || history.length === 0) {
+            const texString = stateVectorToTeX(state, numQubits);
+            el.innerHTML = '<div class="state-formula tex-formula"></div>';
+            const formulaEl = el.querySelector('.tex-formula');
+            renderTeX(texString, formulaEl, { displayMode: true });
+            return;
+        }
 
-        // Create a container for the TeX output
-        el.innerHTML = '<div class="state-formula tex-formula"></div>';
-        const formulaEl = el.querySelector('.tex-formula');
+        // Filter: only show initial state and steps with applied gates
+        const relevantSteps = history.filter(step =>
+            step.col < 0 || (step.appliedGates && step.appliedGates.length > 0)
+        );
 
-        renderTeX(texString, formulaEl, { displayMode: true });
+        // Build timeline of all states
+        let html = '<div class="state-evolution-container">';
+
+        for (let i = 0; i < relevantSteps.length; i++) {
+            const step = relevantSteps[i];
+            const isCurrent = (step === history[history.length - 1]);
+
+            // Arrow separator (between steps, not before first)
+            if (i > 0) {
+                html += '<div class="state-step-arrow">↓</div>';
+            }
+
+            // Gate tags (shown for non-initial steps)
+            let headerContent = '';
+            if (step.col < 0) {
+                headerContent = '<span class="state-step-label">初期状態</span>';
+            } else if (step.appliedGates && step.appliedGates.length > 0) {
+                const gateTags = step.appliedGates.map(g => {
+                    const gLabel = g.label || g.type;
+                    const targets = g.targets.map(t => `q${t}`).join(',');
+                    return `<span class="state-step-gate-tag">${gLabel}(${targets})</span>`;
+                }).join('');
+                headerContent = `<div class="state-step-gates">${gateTags}</div>`;
+            }
+
+            html += `
+            <div class="state-step-card ${isCurrent ? 'current-step' : ''}">
+                <div class="state-step-header">
+                    ${headerContent}
+                </div>
+                <div class="state-step-formula">
+                    <div class="tex-formula" id="tex-step-${i}"></div>
+                </div>
+            </div>`;
+        }
+
+        html += '</div>';
+        el.innerHTML = html;
+
+        // Render TeX for each step
+        for (let i = 0; i < relevantSteps.length; i++) {
+            const step = relevantSteps[i];
+            const texString = stateVectorToTeX(step.stateVector, numQubits);
+            const formulaEl = el.querySelector(`#tex-step-${i}`);
+            if (formulaEl) {
+                renderTeX(texString, formulaEl, { displayMode: true });
+            }
+        }
+
+        // Scroll to the latest step
+        const container = el.querySelector('.state-evolution-container');
+        if (container) {
+            requestAnimationFrame(() => {
+                container.scrollTop = container.scrollHeight;
+            });
+        }
     }
 
     // ─── Amplitudes Bar Chart ────────────────────────────────

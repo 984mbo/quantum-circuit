@@ -1825,3 +1825,85 @@ body {
         opacity: 1;
     }
 }
+
+/* ─── State Evolution Timeline ─────────────────────────────── */
+.state-evolution-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 12px 16px;
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.state-step-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.state-step-card.current-step {
+    background: rgba(90, 200, 250, 0.06);
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 12px rgba(90, 200, 250, 0.12);
+}
+
+.state-step-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.state-step-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    white-space: nowrap;
+    font-family: var(--font-main);
+}
+
+.state-step-card.current-step .state-step-label {
+    color: #ffffff;
+}
+
+.state-step-gates {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.state-step-gate-tag {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.state-step-formula {
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+}
+
+.state-step-formula .tex-formula {
+    font-size: 14px;
+}
+
+/* Arrow separator between steps */
+.state-step-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 0;
+    color: var(--text-muted);
+    font-size: 16px;
+    opacity: 0.5;
+}
