@@ -25,6 +25,11 @@ export class AnimationController {
 
     loadSimulation(steps) {
         this.steps = steps;
+        // Push the full history to the timeline view
+        if (steps.length > 0) {
+            const numQubits = Math.round(Math.log2(steps[0].stateVector.length));
+            this.viewer.updateTimeline(steps, numQubits);
+        }
         this.reset();
     }
 
@@ -133,6 +138,9 @@ export class AnimationController {
             Math.round(Math.log2(step.stateVector.length)),
             this.steps.slice(0, idx + 1)
         );
+
+        // Highlight the active step in the timeline
+        this.viewer.setActiveTimelineStep(idx);
 
         if (step.measurement && step.measurement.outcomes) {
             const outcomes = step.measurement.outcomes;

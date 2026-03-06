@@ -3,13 +3,17 @@
 // ============================================================
 
 import { cAbs, cAbs2 } from '../sim/complex.js';
-import { renderTeX, stateVectorToTeX, formatComplexTeX } from './texRenderer.js';
+import { renderTeX, stateVectorToTeX, texToHTML, formatComplexTeX } from './texRenderer.js';
 import { SymbolicValue } from '../sim/fraction.js';
+import { GATE_COLORS } from '../model/circuit.js';
 
 export class StateViewer {
     constructor(container) {
         this.container = container;
         this.activeTab = 'dirac';
+        this._timelineSteps = [];
+        this._timelineNumQubits = 0;
+        this._activeTimelineStep = -1;
         this._renderTabs();
     }
 
@@ -19,11 +23,15 @@ export class StateViewer {
         <div class="state-tabs">
           <button class="state-tab active" data-tab="dirac">State Vector</button>
           <button class="state-tab" data-tab="amplitudes">Amplitudes</button>
+          <button class="state-tab" data-tab="timeline">Timeline</button>
           <button class="state-tab" data-tab="histogram">Histogram</button>
           <button class="state-tab" data-tab="measurements">Measurements</button>
         </div>
         <div class="state-panel dirac-panel active" id="panel-dirac"></div>
         <div class="state-panel amplitudes-panel" id="panel-amplitudes"></div>
+        <div class="state-panel timeline-panel" id="panel-timeline">
+          <div class="timeline-empty">Run simulation to see state evolution</div>
+        </div>
         <div class="state-panel measurements-panel" id="panel-measurements">
            <div class="measurements-chart" id="chart-measurements"></div>
            <div class="measurements-info" id="info-measurements"></div>
@@ -50,6 +58,138 @@ export class StateViewer {
         this._updateDirac(stateVector, numQubits);
         this._updateAmplitudes(stateVector, numQubits);
         this._updateMeasurementProbabilities(history, numQubits);
+    }
+
+    /**
+     * Load the full simulation history into the Timeline tab.
+     * Called after simulation completes.
+     */
+    updateTimeline(steps, numQubits) {
+        this._timelineSteps = steps;
+        this._timelineNumQubits = numQubits;
+        this._activeTimelineStep = steps.length > 0 ? 0 : -1;
+        this._renderTimeline();
+    }
+
+    /**
+     * Highlight a specific step in the timeline during animation.
+     */
+    setActiveTimelineStep(stepIndex) {
+        this._activeTimelineStep = stepIndex;
+        const panel = document.getElementById('panel-timeline');
+        if (!panel) return;
+
+        // Update active class on step cards
+        panel.querySelectorAll('.timeline-step').forEach((el, i) => {
+            el.classList.toggle('active', i === stepIndex);
+        });
+
+        // Auto-scroll to active step
+        const activeEl = panel.querySelector('.timeline-step.active');
+        if (activeEl) {
+            activeEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+    }
+
+    _renderTimeline() {
+        const panel = document.getElementById('panel-timeline');
+        if (!panel) return;
+
+        const steps = this._timelineSteps;
+        const numQubits = this._timelineNumQubits;
+
+        if (!steps || steps.length === 0) {
+            panel.innerHTML = '<div class="timeline-empty">Run simulation to see state evolution</div>';
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'timeline-container';
+
+        steps.forEach((step, idx) => {
+            // Arrow between steps
+            if (idx > 0) {
+                const arrow = document.createElement('div');
+                arrow.className = 'timeline-arrow';
+                arrow.textContent = '\u2192';
+                container.appendChild(arrow);
+            }
+
+            const card = document.createElement('div');
+            card.className = 'timeline-step' + (idx === this._activeTimelineStep ? ' active' : '');
+
+            // Step header: label + gates
+            const header = document.createElement('div');
+            header.className = 'timeline-step-header';
+
+            const label = document.createElement('span');
+            label.className = 'timeline-step-label';
+            if (step.col < 0) {
+                label.textContent = 'Initial';
+            } else {
+                label.textContent = `Step ${step.col}`;
+            }
+            header.appendChild(label);
+
+            // Gate badges
+            if (step.appliedGates && step.appliedGates.length > 0) {
+                const gatesDiv = document.createElement('div');
+                gatesDiv.className = 'timeline-gates';
+                step.appliedGates.forEach(g => {
+                    const badge = document.createElement('span');
+                    badge.className = 'timeline-gate-badge';
+                    const color = GATE_COLORS[g.type] || '#888';
+                    badge.style.backgroundColor = color + '33';
+                    badge.style.borderColor = color;
+                    badge.textContent = g.type === 'CX' || g.type === 'CNOT' ? 'CX' : g.type;
+                    gatesDiv.appendChild(badge);
+                });
+                header.appendChild(gatesDiv);
+            }
+            card.appendChild(header);
+
+            // Mini amplitude bars
+            const barsDiv = document.createElement('div');
+            barsDiv.className = 'timeline-bars';
+            const dim = 1 << numQubits;
+            const sv = step.stateVector;
+
+            for (let i = 0; i < dim; i++) {
+                const [re, im] = sv[i];
+                const mag = Math.sqrt(re * re + im * im);
+                const phase = Math.atan2(im, re);
+                const hue = ((phase * 180 / Math.PI) + 360) % 360;
+
+                const barWrap = document.createElement('div');
+                barWrap.className = 'timeline-bar-wrap';
+
+                const bar = document.createElement('div');
+                bar.className = 'timeline-bar';
+                bar.style.height = (mag * 100).toFixed(1) + '%';
+                bar.style.backgroundColor = `hsl(${hue}, 80%, 60%)`;
+                barWrap.appendChild(bar);
+
+                const barLabel = document.createElement('div');
+                barLabel.className = 'timeline-bar-label';
+                barLabel.textContent = i.toString(2).padStart(numQubits, '0');
+                barWrap.appendChild(barLabel);
+
+                barsDiv.appendChild(barWrap);
+            }
+            card.appendChild(barsDiv);
+
+            // Compact Dirac notation
+            const diracDiv = document.createElement('div');
+            diracDiv.className = 'timeline-dirac';
+            const texStr = stateVectorToTeX(sv, numQubits, 4);
+            diracDiv.innerHTML = texToHTML(texStr, { displayMode: false });
+            card.appendChild(diracDiv);
+
+            container.appendChild(card);
+        });
+
+        panel.innerHTML = '';
+        panel.appendChild(container);
     }
 
     updateHistogram(counts, totalShots) {

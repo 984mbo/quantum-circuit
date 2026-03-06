@@ -1025,6 +1025,142 @@ body {
     padding: 4px 0;
 }
 
+/* ─── Timeline Panel ───────────────────────────────────────── */
+
+.timeline-panel {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px 4px;
+}
+
+.timeline-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 24px 0;
+    font-style: italic;
+}
+
+.timeline-container {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    min-width: max-content;
+    padding: 4px 0;
+}
+
+.timeline-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--text-muted);
+    padding: 0 6px;
+    flex-shrink: 0;
+    opacity: 0.6;
+}
+
+.timeline-step {
+    flex-shrink: 0;
+    min-width: 120px;
+    max-width: 180px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.timeline-step.active {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(0, 210, 255, 0.25), inset 0 0 6px rgba(0, 210, 255, 0.08);
+}
+
+.timeline-step-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.timeline-step-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.timeline-step.active .timeline-step-label {
+    color: var(--accent-cyan);
+}
+
+.timeline-gates {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+.timeline-gate-badge {
+    font-size: 9px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid;
+    line-height: 1.4;
+}
+
+.timeline-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 40px;
+    margin-bottom: 6px;
+    padding: 0 2px;
+    border-bottom: 1px solid var(--border);
+}
+
+.timeline-bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    justify-content: flex-end;
+    min-width: 14px;
+}
+
+.timeline-bar {
+    width: 100%;
+    max-width: 18px;
+    min-height: 1px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+.timeline-bar-label {
+    font-size: 7px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1;
+}
+
+.timeline-dirac {
+    font-size: 10px;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+.timeline-dirac .katex {
+    font-size: 10px !important;
+}
+
 /* ─── SVG Pulse: Current flow animation ─────────────────────── */
 
 /* Flowing particles along wire */
