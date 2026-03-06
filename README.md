@@ -4,20 +4,56 @@
 
 ---
 
-## 起動方法
+## 🛠 開発環境について
 
-ES Modules を使用しているため、ローカルHTTPサーバーが必要です。
+このプロジェクトは **Antigravity の GitHub リポジトリクローン機能** を使って管理・編集しています。
+ローカルにクローンされたファイルは `/Users/nakadairamasashi/量子回路/` に配置されています。
+
+### ファイルの編集方法
+- Antigravity のエディタ機能でファイルを直接開いて編集します
+- AI に指示するだけでコードの修正・追加が行えます
+
+---
+
+## 🚀 起動方法（動作確認手順）
+
+ES Modules を使用しているため、ブラウザでファイルを直接開くだけでは動作しません。
+**ローカルHTTPサーバー経由でアクセスする**必要があります。
+
+### Step 1: サーバーを起動する
+
+Antigravity のターミナル（または macOS のターミナル）で以下を実行します。
 
 ```bash
 cd /Users/nakadairamasashi/量子回路
 python3 -m http.server 8080
 ```
 
-ブラウザで **http://localhost:8080** を開いてください。
+> サーバーが起動すると `Serving HTTP on 0.0.0.0 port 8080` と表示されます。
+
+### Step 2: ブラウザで動作確認する
+
+Antigravity のブラウザ拡張機能（またはお使いのブラウザ）で以下のURLを開きます。
+
+```
+http://localhost:8080
+```
+
+> **Antigravity でのブラウザ確認**: ブラウザエージェントに `http://localhost:8080` を開かせることで、操作録画・スクリーンショット取得・インタラクションテストが可能です。
+
+### Step 3: 動作確認できる内容
+
+| 機能 | 確認方法 |
+|---|---|
+| 回路設計 | 左パレットからゲートをドラッグ＆ドロップで配置 |
+| シミュレーション | ▶ (Play) ボタンで電流アニメーションと状態遷移を確認 |
+| 状態表示 | 画面下部の Dirac 記法・振幅グラフ・測定ヒストグラム |
+| デモ回路 | ヘッダーの「Bell State」「GHZ State」ボタンで即時ロード |
+| Learn モード | 「Learn」ボタンで量子アルゴリズムのラボを起動 |
 
 ---
 
-## ファイル構成 (9モジュール構成)
+## 📁 ファイル構成 (9モジュール構成)
 
 ```
 .
@@ -27,20 +63,26 @@ python3 -m http.server 8080
 │   └── circuit.js      # データモデル (Gate, Circuit, InputState)
 ├── sim/
 │   ├── complex.js      # 複素数演算 + Seeded RNG
-│   └── statevector.js  # シミュレーションエンジン
+│   ├── statevector.js  # シミュレーションエンジン
+│   └── gates_extra.js  # 追加ゲート定義
 ├── ui/
 │   ├── controls.js     # アプリ制御 (Main Controller)
 │   ├── svgCanvas.js    # 回路描画 + 電流アニメーション
 │   ├── dragDrop.js     # ドラッグ＆ドロップ操作
 │   ├── stateViewer.js  # 状態表示 (Dirac, Amplitudes, Histogram)
-│   └── animation.js    # 再生制御
+│   ├── animation.js    # 再生制御
+│   ├── inputDrawer.js  # 入力状態設定ドロワー
+│   └── learnDrawer.js  # Learn モードドロワー
+├── lessons/
+│   └── labs.js         # 学習ラボ定義
 └── storage/
     └── localStorage.js # 保存・読み込み
 ```
 
 ---
 
-## 📘 Learn Mode (New!)
+## 📘 Learn Mode
+
 ヘッダーの **Learn** ボタンから学習ラボを開けます。
 
 - **Hadamard Test**: 干渉と位相の学習
@@ -52,6 +94,9 @@ python3 -m http.server 8080
 - **Load Lab Circuit**: 回路図を自動ロード
 - **Set Inputs**: 入力状態をプリセット
 - **Run Shots & Check**: 実行結果と期待値を自動照合 (Pass/Fail)
+- **Guided Actions**: 手順ボタンで「ロード→入力→実行」を段階的に操作
+- **Experiment Scenario**: 典型パラメータ/入力をワンクリック適用して挙動比較
+- **Insight Panel**: 測定結果と理論値・主要ビット列を同一画面で確認
 
 ---
 
@@ -94,13 +139,43 @@ python3 -m http.server 8080
 - **Bell State**: 量子もつれ (Entanglement)
 - **GHZ State**: 3量子ビットのもつれ
 
-# Gitにuser.name と user.emailを登録
-git config --global user.email "あなたのメールアドレス"
-git config --global user.name "あなたの名前"
+---
 
-## 使い方メモ
-1. フェッチ
-   git fetch --all
-2. チェックアウト
-3. Windowsの人はこっち
-   python -m http.server 8081
+## 🔧 Git 操作（Antigravity 上での手順）
+
+Antigravity のターミナルから以下のコマンドで Git 操作が可能です。
+
+```bash
+# 初回：Git ユーザー設定（未設定の場合）
+git config --global user.email "your@email.com"
+git config --global user.name "Your Name"
+
+# リモートの変更を取得する
+git fetch --all
+
+# 特定のブランチに切り替える
+git checkout <branch-name>
+
+# 最新の変更を取り込む
+git pull origin main
+
+# 変更をステージング・コミット・プッシュ
+git add .
+git commit -m "コミットメッセージ"
+git push origin main
+```
+
+> **Antigravity での Git 操作**: Antigravity の AI に「このファイルをコミットして」と指示することでも操作できます。
+
+---
+
+## Windows の場合
+
+Python のバージョンによってコマンドが異なります。
+
+```bash
+# Python 3
+python -m http.server 8081
+```
+
+ブラウザで `http://localhost:8081` を開いてください。

@@ -146,13 +146,6 @@ class App {
             this.shots = parseInt(e.target.value) || 1024;
         };
 
-        this.runShots = (shots) => {
-            const counts = this.engine.runShots(this.circuit, this.inputState, shots);
-            this.viewer.updateHistogram(counts, shots);
-            document.querySelector('button[data-tab="histogram"]').click();
-            return counts;
-        };
-
         document.getElementById('btn-run-shots').onclick = () => {
             this.runShots(this.shots);
         };
@@ -210,15 +203,43 @@ class App {
             console.warn("Input preset count mismatch");
             return;
         }
+        const normalized = presets.map((preset) => this._normalizePreset(preset));
         // Temporary support via migration helper in InputState if needed
         // For now, let's just use the InputState's existing _presetsToVector logic if we wanted to
         // But InputState doesn't expose it easily.
         // Let's just create a new state and pretend it was presets.
         const newState = new InputState(this.circuit.numQubits);
-        newState.vector = newState._presetsToVector(presets);
+        newState.vector = newState._presetsToVector(normalized);
         this.inputState = newState;
 
         this._reloadUI();
+    }
+
+    runShots(shots) {
+        const counts = this.engine.runShots(this.circuit, this.inputState, shots);
+        this.viewer.updateHistogram(counts, shots);
+        const histogramTab = document.querySelector('button[data-tab="histogram"]');
+        if (histogramTab) histogramTab.click();
+        return counts;
+    }
+
+    previewCircuit() {
+        this.animator.pause();
+        this.animator.reset();
+        this._runSimulation();
+        this.animator.play();
+    }
+
+    toast(msg) {
+        this._toast(msg);
+    }
+
+    _normalizePreset(preset) {
+        if (!preset || typeof preset !== 'string') return '|0⟩';
+        return preset
+            .replaceAll('>', '⟩')
+            .replaceAll('<', '⟨')
+            .trim();
     }
 
     _runSimulation() {
