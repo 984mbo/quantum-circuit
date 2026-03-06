@@ -27,6 +27,7 @@ export class DragDropHandler {
         this._initDoubleClick();
         this._initSelection();
         this._initDeletion();
+        this._initGateDrag();
     }
 
     // ─── Drag & Drop ──────────────────────────────────────────
@@ -371,6 +372,7 @@ export class DragDropHandler {
                 return;
             }
             if (this.clickModeType) return;
+            if (this.wasDraggingGate) return; // Prevent selection immediately after dragging
 
             // Check if clicked ON a gate
             const target = e.target.closest('.gate-group');
@@ -392,6 +394,113 @@ export class DragDropHandler {
     }
 
     // ─── Deletion ─────────────────────────────────────────────
+
+    // ─── Existing Gate Dragging ───────────────────────────────
+
+    _initGateDrag() {
+        let draggingGateId = null;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Mouse Down on Gate Group
+        this.canvas.svg.addEventListener('mousedown', (e) => {
+            // Cannot drag if we clicked on a control dot
+            if (e.target.closest('.control-dot')) return;
+
+            const group = e.target.closest('.gate-group');
+            if (group) {
+                // Determine if left click
+                if (e.button !== 0) return;
+
+                draggingGateId = parseInt(group.dataset.gateId);
+                isDragging = false;
+                startGridPos = this.canvas.getGridPos(e.clientX, e.clientY);
+                this.wasDraggingGate = false; // Flag to prevent click selection immediately after drag
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        });
+
+        // Mouse Move
+        window.addEventListener('mousemove', (e) => {
+            if (draggingGateId !== null) {
+                // Introduce a 5px threshold to prevent jitter from triggering drag
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                if (!isDragging && Math.sqrt(dx * dx + dy * dy) > 5) {
+                    isDragging = true;
+                    this.wasDraggingGate = true;
+                }
+
+                if (isDragging) {
+                    // Visually dim the original gate to indicate dragging
+                    const group = document.querySelector(`.gate-group[data-gate-id="${draggingGateId}"]`);
+                    if (group) group.setAttribute('opacity', '0.4');
+
+                    const pos = this.canvas.getGridPos(e.clientX, e.clientY);
+                    if (pos) {
+                        this._showDropHighlight(pos);
+                    } else {
+                        this._hideDropHighlight();
+                    }
+                }
+            }
+        });
+
+        // Mouse Up
+        window.addEventListener('mouseup', (e) => {
+            if (draggingGateId !== null) {
+                // Restore opacity
+                const group = document.querySelector(`.gate-group[data-gate-id="${draggingGateId}"]`);
+                if (group) group.removeAttribute('opacity');
+
+                if (isDragging) {
+                    const pos = this.canvas.getGridPos(e.clientX, e.clientY);
+                    if (pos) {
+                        const gate = this.circuit.gates.find(g => g.id === draggingGateId);
+                        if (gate) {
+                            // Calculate delta in qubits based on the top-most wire of the gate
+                            let minQ = gate.targets.length > 0 ? Math.min(...gate.targets) : 0;
+                            if (gate.controls.length > 0) {
+                                minQ = Math.min(minQ, ...gate.controls);
+                            }
+
+                            // Prevent dragging bottom-most qubit of a multi-qubit gate completely off-screen
+                            // However, calculating Delta based on mouse vs minQ works nicely:
+                            // pos.qubit corresponds to where the user dragged minQ.
+                            const deltaQ = pos.qubit - minQ;
+
+                            const newTargets = gate.targets.map(q => q + deltaQ);
+                            const newControls = gate.controls.map(q => q + deltaQ);
+
+                            // Check if valid (not outside bounds backwards or forwards)
+                            const allQ = [...newTargets, ...newControls];
+                            const isValid = allQ.every(q => q >= 0 && q < this.circuit.numQubits);
+
+                            if (isValid) {
+                                gate.col = pos.col;
+                                gate.targets = newTargets;
+                                gate.controls = newControls;
+                                this.canvas.render();
+                                this.onUpdate();
+                            }
+                        }
+                    }
+                    this._hideDropHighlight();
+                }
+
+                // Reset state
+                draggingGateId = null;
+                isDragging = false;
+
+                // Clear the wasDraggingGate flag after a short delay so click event doesn't trigger selection
+                setTimeout(() => {
+                    this.wasDraggingGate = false;
+                }, 50);
+            }
+        });
+    }
 
     // ─── Control Dot Dragging ─────────────────────────────────
 
