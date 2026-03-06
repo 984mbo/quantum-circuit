@@ -174,7 +174,7 @@ export class CircuitCanvas {
             const group = this._el('g', {
                 class: `gate-group ${isActive ? 'active' : ''} ${isSelected ? 'selected' : ''}`,
                 'data-gate-id': gate.id,
-                style: 'cursor: pointer;'
+                style: 'cursor: move;'
             });
 
             this._renderGateShape(group, gate, isActive, isSelected);
