@@ -218,8 +218,8 @@ class App {
     runShots(shots) {
         const counts = this.engine.runShots(this.circuit, this.inputState, shots);
         this.viewer.updateHistogram(counts, shots);
-        const histogramTab = document.querySelector('button[data-tab="histogram"]');
-        if (histogramTab) histogramTab.click();
+        const timelineTab = document.querySelector('button[data-tab="timeline"]');
+        if (timelineTab) timelineTab.click();
         return counts;
     }
 
