@@ -1593,9 +1593,14 @@ body {
 
 /* ─── KaTeX dark theme ─────────────────────────────────────── */
 
-.katex { color: var(--text-primary); }
+.katex {
+    color: var(--text-primary);
+}
+
 .katex .mathnormal,
-.katex .mord { color: inherit; }
+.katex .mord {
+    color: inherit;
+}
 
 .tex-formula {
     padding: 12px 8px;
@@ -1682,7 +1687,11 @@ body {
     transition: all 0.15s;
 }
 
-.link-btn:hover { border-color: var(--accent-cyan); color: var(--text-secondary); }
+.link-btn:hover {
+    border-color: var(--accent-cyan);
+    color: var(--text-secondary);
+}
+
 .link-btn.linked {
     background: rgba(34, 211, 238, 0.08);
     border-style: solid;
@@ -1712,7 +1721,9 @@ body {
     overflow-x: auto;
 }
 
-.preview-tex { font-size: 14px; }
+.preview-tex {
+    font-size: 14px;
+}
 
 /* ─── Bloch Sphere ──────────────────────────────────────────── */
 
@@ -2093,6 +2104,7 @@ body {
 /* ─── Responsive Drawer ─────────────────────────────────────── */
 
 @media (max-width: 768px) {
+
     .learn-drawer,
     .input-drawer {
         width: 100%;
@@ -2850,4 +2862,208 @@ body {
     text-align: right;
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+}
+
+/* ─── Timeline Improvements ───────────────────────────────── */
+
+.timeline-panel {
+    overflow: auto;
+    max-height: 100%;
+}
+
+.timeline-container {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    overflow-x: auto;
+    overflow-y: auto;
+    align-items: flex-start;
+    min-height: 0;
+    scroll-behavior: smooth;
+}
+
+.timeline-step {
+    min-width: 160px;
+    max-width: 220px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    padding: 10px;
+    flex-shrink: 0;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.timeline-step.active {
+    border-color: var(--accent-cyan, #22d3ee);
+    box-shadow: 0 0 12px rgba(34, 211, 238, 0.25);
+}
+
+.timeline-arrow {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: var(--text-muted, #888);
+    flex-shrink: 0;
+    padding: 0 2px;
+    align-self: center;
+}
+
+.timeline-step-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.timeline-step-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted, #aaa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.timeline-gates {
+    display: flex;
+    gap: 3px;
+}
+
+.timeline-gate-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    border: 1px solid;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* Section labels for 2-tier layout */
+.timeline-section-label {
+    font-size: 9px;
+    color: var(--text-muted, #888);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    padding-left: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 2px;
+}
+
+.timeline-section-label-lower {
+    margin-top: 10px;
+    color: #f59e0b;
+}
+
+/* Bars wrapper with scale marks */
+.timeline-bars-wrapper {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: 4px;
+}
+
+.timeline-scale-mark {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+}
+
+.timeline-scale-mark::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    top: -7px;
+    font-size: 8px;
+    color: var(--text-muted, #666);
+    line-height: 1;
+}
+
+/* Amplitude bars */
+.timeline-bars {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 80px;
+}
+
+.timeline-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 18px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.timeline-bar {
+    width: 100%;
+    max-width: 28px;
+    min-height: 1px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+.timeline-bar-label {
+    font-size: 8px;
+    color: var(--text-muted, #888);
+    margin-top: 2px;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+/* Dirac notation in timeline */
+.timeline-dirac {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-primary, #ddd);
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Histogram bars in timeline (lower section) */
+.timeline-histogram-wrapper {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+    height: 60px;
+    padding-left: 24px;
+}
+
+.timeline-hist-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 18px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.timeline-hist-bar {
+    width: 100%;
+    max-width: 28px;
+    min-height: 1px;
+    border-radius: 2px 2px 0 0;
+    background: #f59e0b;
+    transition: height 0.3s ease;
+}
+
+.timeline-hist-value {
+    font-size: 7px;
+    color: #f59e0b;
+    margin-top: 1px;
+    white-space: nowrap;
+}
+
+.timeline-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted, #888);
+    font-size: 13px;
 }
