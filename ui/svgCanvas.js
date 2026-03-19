@@ -4,11 +4,11 @@
 
 import { GATE_QUBIT_COUNT, GATE_HAS_PARAM, GATE_COLORS } from '../model/circuit.js';
 
-const CELL_W = 70;
-const CELL_H = 60;
-const WIRE_Y_START = 40;
-const WIRE_X_START = 60;
-const GATE_SIZE = 40;
+export const CELL_W = 47;
+export const CELL_H = 40;
+export const WIRE_Y_START = 27;
+export const WIRE_X_START = 40;
+const GATE_SIZE = 27;
 
 export class CircuitCanvas {
     /**
@@ -82,10 +82,39 @@ export class CircuitCanvas {
         if (defs) this.svg.appendChild(defs);
 
         // Update Dimensions
-        const totalW = Math.max(800, WIRE_X_START + this.circuit.numCols * CELL_W + 60);
+        const totalW = Math.max(533, WIRE_X_START + this.circuit.numCols * CELL_W + 40);
         const totalH = WIRE_Y_START + this.circuit.numQubits * CELL_H + 20;
         this.svg.setAttribute('viewBox', `0 0 ${totalW} ${totalH}`);
+        this.svg.setAttribute('preserveAspectRatio', 'xMinYMin meet');
+
+        // Dynamic SVG sizing based on wire count
+        const container = this.svg.parentElement;
+        const containerH = container.clientHeight;
+        const numQ = this.circuit.numQubits;
+
+        // Reference: 2 wires = 80% of container height
+        const ref2H = WIRE_Y_START + 2 * CELL_H + 20;
+        const baseScale = (containerH * 0.8) / ref2H;
+
+        const MAX_FIT_WIRES = 4;
+        let svgHeight;
+
+        if (numQ <= 2) {
+            // 2 wires: 80% of container
+            svgHeight = containerH * 0.8;
+        } else if (numQ <= MAX_FIT_WIRES) {
+            // 3-4 wires: scale to fit container, but don't exceed
+            const neededH = totalH * baseScale;
+            svgHeight = Math.min(neededH, containerH);
+        } else {
+            // 5+ wires: use the same scale as 4-wire-fit, allow scroll
+            const ref4H = WIRE_Y_START + MAX_FIT_WIRES * CELL_H + 20;
+            const fitScale = Math.min(baseScale, containerH / ref4H);
+            svgHeight = totalH * fitScale;
+        }
+
         this.svg.style.width = '100%';
+        this.svg.style.height = svgHeight + 'px';
 
         this._renderGrid();
         this._renderWires();
@@ -116,7 +145,7 @@ export class CircuitCanvas {
         const text = this._el('text', {
             x: x, y: y,
             fill: '#ef4444', // Red color for result
-            'font-family': 'monospace', 'font-weight': 'bold', 'font-size': '14',
+            'font-family': 'monospace', 'font-weight': 'bold', 'font-size': '10',
             class: 'measure-result-text'
         });
         text.textContent = val;
@@ -157,8 +186,8 @@ export class CircuitCanvas {
         for (let q = 0; q < this.circuit.numQubits; q++) {
             const y = this.qubitY(q);
             g.appendChild(this._el('text', {
-                x: 10, y: y + 5, fill: '#94a3b8',
-                'font-family': 'monospace', 'font-size': '14', 'font-weight': 'bold'
+                x: 7, y: y + 4, fill: '#94a3b8',
+                'font-family': 'monospace', 'font-size': '10', 'font-weight': 'bold'
             })).textContent = `q${q}`;
         }
         this.svg.appendChild(g);
@@ -212,26 +241,26 @@ export class CircuitCanvas {
             }));
             // Control dot
             group.appendChild(this._el('circle', {
-                cx: x, cy: cy, r: 6, fill: color,
+                cx: x, cy: cy, r: 4, fill: color,
                 class: 'control-dot', 'data-control-index': 0  // Hook for drag
             }));
 
             if (gate.type === 'CX' || gate.type === 'CNOT') {
                 // Target XOR
                 group.appendChild(this._el('circle', {
-                    cx: x, cy: ty, r: 16, fill: '#1e293b', stroke: baseColor, 'stroke-width': strokeW
+                    cx: x, cy: ty, r: 11, fill: '#1e293b', stroke: baseColor, 'stroke-width': strokeW
                 }));
                 // Cross
-                group.appendChild(this._el('line', { x1: x, y1: ty - 12, x2: x, y2: ty + 12, stroke: baseColor, 'stroke-width': 2 }));
-                group.appendChild(this._el('line', { x1: x - 12, y1: ty, x2: x + 12, y2: ty, stroke: baseColor, 'stroke-width': 2 }));
+                group.appendChild(this._el('line', { x1: x, y1: ty - 8, x2: x, y2: ty + 8, stroke: baseColor, 'stroke-width': 2 }));
+                group.appendChild(this._el('line', { x1: x - 8, y1: ty, x2: x + 8, y2: ty, stroke: baseColor, 'stroke-width': 2 }));
             } else if (gate.type === 'CZ') {
                 // CZ Target Box with Z
                 const r = box(ty);
                 group.appendChild(r);
                 const label = this._el('text', {
-                    x, y: ty + 5, 'text-anchor': 'middle',
+                    x, y: ty + 4, 'text-anchor': 'middle',
                     fill: isActive ? '#000' : color,
-                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 16
+                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 11
                 });
                 label.textContent = 'Z';
                 if (isActive) label.setAttribute('fill', '#ffffff');
@@ -244,8 +273,8 @@ export class CircuitCanvas {
                 const r = box(ty);
                 group.appendChild(r);
                 const label = this._el('text', {
-                    x, y: ty + 5, 'text-anchor': 'middle', fill: isActive ? '#000' : color,
-                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 14
+                    x, y: ty + 4, 'text-anchor': 'middle', fill: isActive ? '#000' : color,
+                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 10
                 });
                 label.textContent = 'P';
                 group.appendChild(label);
@@ -253,7 +282,7 @@ export class CircuitCanvas {
                 // Param
                 if (gate.params.phi !== undefined) {
                     const sub = this._el('text', {
-                        x, y: ty + 26, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': 9
+                        x, y: ty + 18, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': 6
                     });
                     sub.textContent = (gate.params.phi / Math.PI).toFixed(2) + 'π';
                     group.appendChild(sub);
@@ -262,15 +291,15 @@ export class CircuitCanvas {
                 const r = box(ty);
                 group.appendChild(r);
                 const label = this._el('text', {
-                    x, y: ty + 5, 'text-anchor': 'middle', fill: isActive ? '#000' : color,
-                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 14
+                    x, y: ty + 4, 'text-anchor': 'middle', fill: isActive ? '#000' : color,
+                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 10
                 });
                 label.textContent = 'Rz';
                 group.appendChild(label);
 
                 if (gate.params.theta !== undefined) {
                     const sub = this._el('text', {
-                        x, y: ty + 26, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': 9
+                        x, y: ty + 18, 'text-anchor': 'middle', fill: '#94a3b8', 'font-size': 6
                     });
                     sub.textContent = (gate.params.theta / Math.PI).toFixed(2) + 'π';
                     group.appendChild(sub);
@@ -295,7 +324,7 @@ export class CircuitCanvas {
                 }));
 
                 // Control dot
-                group.appendChild(this._el('circle', { cx: x, cy: cy, r: 6, fill: color }));
+                group.appendChild(this._el('circle', { cx: x, cy: cy, r: 4, fill: color }));
             }
 
             const y1 = this.qubitY(gate.targets[0]);
@@ -307,9 +336,9 @@ export class CircuitCanvas {
             }
 
             const drawCross = (y) => {
-                const s = 6;
-                group.appendChild(this._el('line', { x1: x - s, y1: y - s, x2: x + s, y2: y + s, stroke: baseColor, 'stroke-width': 2.5 }));
-                group.appendChild(this._el('line', { x1: x + s, y1: y - s, x2: x - s, y2: y + s, stroke: baseColor, 'stroke-width': 2.5 }));
+                const s = 4;
+                group.appendChild(this._el('line', { x1: x - s, y1: y - s, x2: x + s, y2: y + s, stroke: baseColor, 'stroke-width': 2 }));
+                group.appendChild(this._el('line', { x1: x + s, y1: y - s, x2: x - s, y2: y + s, stroke: baseColor, 'stroke-width': 2 }));
             }
             drawCross(y1);
             drawCross(y2);
@@ -321,24 +350,24 @@ export class CircuitCanvas {
             const meterColor = isActive ? '#ffffff' : color;
 
             // Semicircle arc (bottom half of meter dial)
-            const arcR = 12;
-            const arcCY = y + 2;
+            const arcR = 8;
+            const arcCY = y + 1;
             // SVG arc: from left to right of semicircle
             const arcPath = `M ${x - arcR} ${arcCY} A ${arcR} ${arcR} 0 0 1 ${x + arcR} ${arcCY}`;
             group.appendChild(this._el('path', {
                 d: arcPath,
                 fill: 'none',
                 stroke: meterColor,
-                'stroke-width': 2,
+                'stroke-width': 1.5,
                 'stroke-linecap': 'round'
             }));
 
             // Baseline of the meter
             group.appendChild(this._el('line', {
-                x1: x - arcR - 2, y1: arcCY,
-                x2: x + arcR + 2, y2: arcCY,
+                x1: x - arcR - 1, y1: arcCY,
+                x2: x + arcR + 1, y2: arcCY,
                 stroke: meterColor,
-                'stroke-width': 1.5
+                'stroke-width': 1
             }));
 
             // Needle pointing to upper-right (~45 degrees)
@@ -350,18 +379,18 @@ export class CircuitCanvas {
                 x1: x, y1: arcCY,
                 x2: nx, y2: ny,
                 stroke: meterColor,
-                'stroke-width': 2,
+                'stroke-width': 1.5,
                 'stroke-linecap': 'round'
             }));
 
             // Small dot at the needle pivot
             group.appendChild(this._el('circle', {
-                cx: x, cy: arcCY, r: 2,
+                cx: x, cy: arcCY, r: 1.5,
                 fill: meterColor
             }));
 
             // Arrowhead at needle tip
-            const arrowSize = 3;
+            const arrowSize = 2;
             const arrowAngle1 = needleAngle + 2.5;
             const arrowAngle2 = needleAngle - 0.6;
             const ax1 = nx - arrowSize * Math.cos(arrowAngle1);
@@ -378,9 +407,9 @@ export class CircuitCanvas {
             group.appendChild(box(y));
 
             const label = this._el('text', {
-                x, y: y + 5, 'text-anchor': 'middle',
+                x, y: y + 4, 'text-anchor': 'middle',
                 fill: isActive ? '#000' : color,
-                'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 16
+                'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 11
             });
             label.textContent = gate.label;
             if (isActive) label.setAttribute('fill', '#ffffff');
@@ -389,8 +418,8 @@ export class CircuitCanvas {
             // Parameters
             if (gate.params.theta !== undefined) {
                 const sub = this._el('text', {
-                    x, y: y + 26, 'text-anchor': 'middle',
-                    fill: '#94a3b8', 'font-size': 10
+                    x, y: y + 18, 'text-anchor': 'middle',
+                    fill: '#94a3b8', 'font-size': 7
                 });
                 sub.textContent = (gate.params.theta / Math.PI).toFixed(2) + 'π';
                 group.appendChild(sub);
@@ -553,13 +582,15 @@ export class CircuitCanvas {
         const x = clientX - rect.left;
         const y = clientY - rect.top;
 
-        // Convert to viewbox coords
+        // Convert to viewbox coords accounting for preserveAspectRatio="xMinYMin meet"
         const vb = this.svg.viewBox.baseVal;
         const scaleX = vb.width / rect.width;
         const scaleY = vb.height / rect.height;
+        // meet: use the larger scale factor (content fits within element)
+        const scale = Math.max(scaleX, scaleY);
 
-        const svgX = x * scaleX;
-        const svgY = y * scaleY;
+        const svgX = x * scale;
+        const svgY = y * scale;
 
         const col = Math.floor((svgX - WIRE_X_START) / CELL_W);
         const qubit = Math.floor((svgY - WIRE_Y_START) / CELL_H);

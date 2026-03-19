@@ -95,7 +95,8 @@ export class LearnDrawer {
                 </div>
             </div>
         `;
-        document.body.appendChild(drawer);
+        const topPanel = document.querySelector('.top-panel');
+        topPanel.appendChild(drawer);
         this.container = drawer;
 
         drawer.querySelector('.close-drawer').onclick = () => this.close();
