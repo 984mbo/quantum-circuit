@@ -114,7 +114,7 @@ export class Gate {
  */
 export class Circuit {
     /**
-     * @param {number} numQubits - Number of qubit wires (1–5)
+     * @param {number} numQubits - Number of qubit wires (1–10)
      * @param {number} numCols - Number of time-step columns
      */
     constructor(numQubits = 2, numCols = 6) {
@@ -155,9 +155,9 @@ export class Circuit {
         return this.gates.filter(g => g.col === col);
     }
 
-    /** Add a qubit wire (max 5). */
+    /** Add a qubit wire (max 10). */
     addQubit() {
-        if (this.numQubits < 5) this.numQubits++;
+        if (this.numQubits < 10) this.numQubits++;
     }
 
     /** Remove the last qubit wire and all gates on it. */

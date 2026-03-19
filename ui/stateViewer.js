@@ -121,6 +121,15 @@ export class StateViewer {
         const container = document.createElement('div');
         container.className = 'timeline-container';
 
+        // Auto-adjust histogram bar limit based on wire count
+        const dim = 1 << numQubits;
+        const maxBars = numQubits <= 3 ? dim : Math.min(dim, 16);
+
+        // Auto-adjust Dirac font size based on wire count
+        const diracFontSize = numQubits <= 3 ? 10 : numQubits <= 5 ? 8 : 6;
+        // Auto-adjust max terms for Dirac display
+        const diracMaxTerms = numQubits <= 3 ? 4 : numQubits <= 5 ? 3 : 2;
+
         filteredSteps.forEach((step, idx) => {
             // Arrow between steps
             if (idx > 0) {
@@ -188,40 +197,68 @@ export class StateViewer {
 
             const barsDiv = document.createElement('div');
             barsDiv.className = 'timeline-bars';
-            const dim = 1 << numQubits;
             const sv = step.stateVector;
 
+            // Collect all amplitudes and filter/sort for display
+            const amplitudes = [];
             for (let i = 0; i < dim; i++) {
                 const [re, im] = sv[i];
                 const mag = Math.sqrt(re * re + im * im);
-                const phase = Math.atan2(im, re);
-                const hue = ((phase * 180 / Math.PI) + 360) % 360;
+                if (mag > 1e-6) {
+                    const phase = Math.atan2(im, re);
+                    amplitudes.push({ idx: i, mag, phase });
+                }
+            }
+            // Sort by magnitude descending, limit to maxBars
+            amplitudes.sort((a, b) => b.mag - a.mag);
+            const displayAmps = amplitudes.slice(0, maxBars);
+            const hiddenCount = amplitudes.length - displayAmps.length;
+
+
+
+            // Auto-adjust bar label font size
+            const barLabelSize = numQubits <= 4 ? 7 : numQubits <= 6 ? 6 : 5;
+
+            for (const amp of displayAmps) {
+                const hue = ((amp.phase * 180 / Math.PI) + 360) % 360;
 
                 const barWrap = document.createElement('div');
                 barWrap.className = 'timeline-bar-wrap';
 
                 const bar = document.createElement('div');
                 bar.className = 'timeline-bar';
-                // Height = amplitude magnitude (max 1.0 = 100% of container)
-                bar.style.height = (mag * 100).toFixed(1) + '%';
+                bar.style.height = (amp.mag * 100).toFixed(1) + '%';
                 bar.style.backgroundColor = `hsl(${hue}, 80%, 60%)`;
                 barWrap.appendChild(bar);
 
                 const barLabel = document.createElement('div');
                 barLabel.className = 'timeline-bar-label';
-                barLabel.textContent = i.toString(2).padStart(numQubits, '0');
+                barLabel.style.fontSize = barLabelSize + 'px';
+                barLabel.textContent = amp.idx.toString(2).padStart(numQubits, '0');
                 barWrap.appendChild(barLabel);
 
                 barsDiv.appendChild(barWrap);
             }
+
+            if (hiddenCount > 0) {
+                const more = document.createElement('div');
+                more.className = 'timeline-bar-more';
+                more.textContent = `+${hiddenCount}`;
+                barsDiv.appendChild(more);
+            }
+
             barsWrapper.appendChild(barsDiv);
             card.appendChild(barsWrapper);
 
-            // Compact Dirac notation
+            // Compact Dirac notation with auto-sizing
             const diracDiv = document.createElement('div');
             diracDiv.className = 'timeline-dirac';
-            const texStr = stateVectorToTeX(sv, numQubits, 4);
+            diracDiv.style.fontSize = diracFontSize + 'px';
+            const texStr = stateVectorToTeX(sv, numQubits, diracMaxTerms);
             diracDiv.innerHTML = texToHTML(texStr, { displayMode: false });
+            // Auto-scale KaTeX font
+            const katexEl = diracDiv.querySelector('.katex');
+            if (katexEl) katexEl.style.fontSize = diracFontSize + 'px';
             card.appendChild(diracDiv);
 
             // ── Lower section: Histogram (measurement shots) ──
@@ -242,8 +279,10 @@ export class StateViewer {
                     histWrapper.className = 'timeline-histogram-wrapper';
 
                     const maxVal = Math.max(...Object.values(counts), 1);
+                    const histBars = sorted.slice(0, maxBars);
+                    const hiddenHist = sorted.length - histBars.length;
 
-                    for (const [bin, count] of sorted) {
+                    for (const [bin, count] of histBars) {
                         const pct = (count / totalShots * 100).toFixed(1);
                         const height = (count / maxVal * 100);
 
@@ -262,11 +301,20 @@ export class StateViewer {
 
                         const binLabel = document.createElement('div');
                         binLabel.className = 'timeline-bar-label';
+                        binLabel.style.fontSize = barLabelSize + 'px';
                         binLabel.textContent = bin;
                         barWrap.appendChild(binLabel);
 
                         histWrapper.appendChild(barWrap);
                     }
+
+                    if (hiddenHist > 0) {
+                        const moreDiv = document.createElement('div');
+                        moreDiv.className = 'timeline-bar-more';
+                        moreDiv.textContent = `+${hiddenHist} more`;
+                        histWrapper.appendChild(moreDiv);
+                    }
+
                     card.appendChild(histWrapper);
                 }
             }

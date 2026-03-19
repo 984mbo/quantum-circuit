@@ -82,7 +82,7 @@ class App {
 
         // --- Toolbar ---
         document.getElementById('btn-add-wire').onclick = () => {
-            if (this.circuit.numQubits < 5) {
+            if (this.circuit.numQubits < 10) {
                 this.circuit.addQubit();
                 // Re-init input state vector size, trying to preserve if possible 
                 // but usually enlarging requires a reset or specific padding.

@@ -163,7 +163,7 @@ function _dec(v) {
  */
 export function densityMatrixToTeX(rho, numQubits) {
     const dim = 1 << numQubits;
-    if (dim > 8) return '\\rho\\;(\\text{too large to display})';
+    if (dim > 16) return '\\rho\\;(\\text{too large to display})';
 
     let tex = '\\rho = \\begin{pmatrix}';
     for (let i = 0; i < dim; i++) {
