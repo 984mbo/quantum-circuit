@@ -2,7 +2,7 @@
 // ui/svgCanvas.js — SVG Circuit Rendering & Animation
 // ============================================================
 
-import { GATE_QUBIT_COUNT, GATE_HAS_PARAM, GATE_COLORS } from '../model/circuit.js';
+import { GATE_QUBIT_COUNT, GATE_HAS_PARAM, GATE_COLORS, isCustomGate, getCustomGateDef } from '../model/circuit.js';
 
 export const CELL_W = 47;
 export const CELL_H = 40;
@@ -401,6 +401,62 @@ export class CircuitCanvas {
                 points: `${nx},${ny} ${ax1},${ay1} ${ax2},${ay2}`,
                 fill: meterColor
             }));
+        } else if (isCustomGate(gate.type)) {
+            // Custom gate rendering
+            const def = getCustomGateDef(gate.type);
+            if (!def) return;
+
+            const controls = gate.controls || [];
+            const targets = gate.targets || [];
+
+            // Find min/max y of all qubits involved
+            const allQubits = [...controls, ...targets];
+            const ys = allQubits.map(q => this.qubitY(q));
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+
+            // Vertical line connecting all qubits
+            if (allQubits.length > 1) {
+                group.appendChild(this._el('line', {
+                    x1: x, y1: minY, x2: x, y2: maxY,
+                    stroke: color, 'stroke-width': 2
+                }));
+            }
+
+            // Draw control dots
+            controls.forEach((c, idx) => {
+                const cy = this.qubitY(c);
+                group.appendChild(this._el('circle', {
+                    cx: x, cy: cy, r: 4, fill: color,
+                    class: 'control-dot', 'data-control-index': idx
+                }));
+            });
+
+            // Draw target boxes with icon
+            for (const t of targets) {
+                const ty = this.qubitY(t);
+                group.appendChild(box(ty));
+
+                const label = this._el('text', {
+                    x, y: ty + 4, 'text-anchor': 'middle',
+                    fill: isActive ? '#000' : color,
+                    'font-family': 'sans-serif', 'font-weight': 'bold', 'font-size': 11
+                });
+                label.textContent = def.iconSymbol;
+                if (isActive) label.setAttribute('fill', '#ffffff');
+                group.appendChild(label);
+            }
+
+            // Name label below the last target
+            if (targets.length > 0) {
+                const lastTy = this.qubitY(targets[targets.length - 1]);
+                const nameLabel = this._el('text', {
+                    x, y: lastTy + 18, 'text-anchor': 'middle',
+                    fill: '#94a3b8', 'font-size': 7
+                });
+                nameLabel.textContent = def.name;
+                group.appendChild(nameLabel);
+            }
         } else {
             // Standard single qubit
             const y = this.qubitY(gate.targets[0]);

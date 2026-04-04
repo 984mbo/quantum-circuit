@@ -40,6 +40,53 @@ export const GATE_CATEGORIES = {
     Measure: ['Measure'],
 };
 
+// ─── Custom Gate Registry ──────────────────────────────────
+
+/** Registry of custom gate definitions (set at runtime) */
+const _customGateRegistry = new Map();
+
+/**
+ * Register a custom gate definition into the gate metadata tables.
+ * @param {import('./customGate.js').CustomGateDefinition} def
+ */
+export function registerCustomGate(def) {
+    const type = def.id;
+    _customGateRegistry.set(type, def);
+    GATE_COLORS[type] = def.color;
+    GATE_LABELS[type] = def.name;
+    // totalQubits = U qubits + default controls
+    GATE_QUBIT_COUNT[type] = def.numQubits + def.defaultControls;
+}
+
+/**
+ * Unregister a custom gate.
+ * @param {string} id
+ */
+export function unregisterCustomGate(id) {
+    _customGateRegistry.delete(id);
+    delete GATE_COLORS[id];
+    delete GATE_LABELS[id];
+    delete GATE_QUBIT_COUNT[id];
+}
+
+/**
+ * Check if a gate type is a custom gate.
+ * @param {string} type
+ * @returns {boolean}
+ */
+export function isCustomGate(type) {
+    return _customGateRegistry.has(type);
+}
+
+/**
+ * Get the custom gate definition for a type.
+ * @param {string} type
+ * @returns {import('./customGate.js').CustomGateDefinition|undefined}
+ */
+export function getCustomGateDef(type) {
+    return _customGateRegistry.get(type);
+}
+
 /**
  * Preset single-qubit initial states.
  * Each value is [α_re, α_im, β_re, β_im] for state α|0⟩ + β|1⟩.

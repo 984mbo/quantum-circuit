@@ -124,55 +124,20 @@ function applyControlledSwap(state, control, t1, t2, numQubits) {
     const b1 = 1 << t1;
     const b2 = 1 << t2;
 
-    for (let i = 0; i < dim; i++) {
-        // Check control is 1
-        if ((i & ctrlBit) !== 0) {
-            // Check if t1 and t2 bits differ (01 vs 10)
-            if ((i & b1) === 0 && (i & b2) !== 0) {
-                // i has t1=0, t2=1. We need to swap with j having t1=1, t2=0
-                const j = (i | b1) & ~b2;
-
-                // Swap amplitudes
-                const temp = newState[i];
-                newState[i] = newState[j];
-                newState[j] = temp;
-            }
-            // If bits are same (00 or 11), loop will hit them but no swap needed,
-            // or we already swapped the pair when we hit the lower index.
-            // Wait, we iterate 0..dim.
-            // When we hit i (01), we swap with j (10).
-            // Later we hit j (10), we see it's (10), so we look for (01) aka i.
-            // If we swap again, we undo!!
-            // FIX: Only swap if i < j.
-        }
-    }
-
-    // Correct loop for swap:
-    // Iterate 0 to dim. If (i & ctrl) && (t1 != t2) && (i < swap_target)...
-    // Or just re-implement cleaner loop.
-
-    // Reset newState to correct logic
-    // Actually, simply iterating and swapping IN PLACE is dangerous if we don't track visited.
-    // But we are writing to `newState`? No, `newState` is initialized with copy of `state`.
-    // If we swap `newState[i]` and `newState[j]`, later when loop reaches `j`, it will swap back `newState[j]` with `newState[i]`.
-    // Result: No change.
-
-    // We must process pairs.
-    const processed = new Uint8Array(dim); // 0 or 1
+    const processed = new Uint8Array(dim);
 
     for (let i = 0; i < dim; i++) {
         if (processed[i]) continue;
 
+        // Only apply when control qubit is 1
         if ((i & ctrlBit) !== 0) {
             const val1 = (i & b1) !== 0;
             const val2 = (i & b2) !== 0;
 
+            // Swap only when t1 and t2 bits differ
             if (val1 !== val2) {
-                // Find pair j
-                // Flip bits b1 and b2
                 const j = i ^ b1 ^ b2;
 
-                // Swap execution
                 const temp = newState[i];
                 newState[i] = newState[j];
                 newState[j] = temp;

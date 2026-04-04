@@ -3101,3 +3101,251 @@ body {
     color: var(--text-muted, #888);
     font-size: 13px;
 }
+
+/* ─── Gate Designer ────────────────────────────────────────── */
+
+.gate-designer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+}
+.gate-designer-overlay.open { display: flex; justify-content: center; align-items: flex-start; }
+
+.gate-designer-panel {
+    width: min(95vw, 1100px);
+    max-height: 85vh;
+    margin-top: 48px;
+    background: var(--bg-panel, #1a1a2e);
+    border: 1px solid var(--border, #333);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: designerSlideDown 0.3s ease-out;
+}
+@keyframes designerSlideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}
+
+.designer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border, #333);
+    background: rgba(255,255,255,0.03);
+}
+.designer-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.designer-header-actions { display: flex; gap: 8px; align-items: center; }
+.designer-header-actions .close-drawer { font-size: 22px; }
+
+.designer-body {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 300px;
+}
+
+/* Left column: settings */
+.designer-settings {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.designer-field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted, #888);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.designer-field input[type="text"],
+.designer-field select {
+    width: 100%;
+    padding: 6px 10px;
+    background: var(--bg-input, #16213e);
+    border: 1px solid var(--border, #333);
+    border-radius: 6px;
+    color: var(--text, #e0e0e0);
+    font-size: 13px;
+}
+.designer-field input[type="color"] {
+    width: 100%;
+    height: 32px;
+    border: 1px solid var(--border, #333);
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+}
+
+/* Icon grid */
+.designer-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+}
+.designer-icon-option {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: rgba(255,255,255,0.05);
+}
+.designer-icon-option:hover { background: rgba(255,255,255,0.1); }
+.designer-icon-option.selected {
+    border-color: var(--accent, #3b82f6);
+    background: rgba(59,130,246,0.15);
+}
+
+.designer-actions {
+    display: flex; gap: 8px; margin-top: auto; padding-top: 8px;
+}
+.designer-actions .tool-btn { flex: 1; }
+
+/* Center column: sub-circuit */
+.designer-circuit {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.designer-circuit-label,
+.designer-preview-label,
+.designer-saved-label {
+    font-size: 11px;
+    color: var(--text-muted, #888);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+.designer-circuit-toolbar {
+    margin-bottom: 8px;
+}
+.designer-gate-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.designer-gate-btn {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid var(--border, #333);
+    border-radius: 6px;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.15s;
+}
+.designer-gate-btn:hover { filter: brightness(1.3); transform: scale(1.1); }
+.designer-gate-btn.active {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 1px;
+}
+
+.designer-circuit-canvas {
+    flex: 1;
+    background: var(--bg-input, #16213e);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    overflow: auto;
+    min-height: 150px;
+    position: relative;
+}
+.designer-circuit-canvas svg {
+    width: 100%;
+    height: 100%;
+    min-height: 150px;
+}
+
+/* Right column: preview */
+.designer-preview {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.designer-matrix {
+    background: var(--bg-input, #16213e);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    overflow: auto;
+    max-height: 180px;
+    line-height: 1.5;
+}
+.designer-state-preview {
+    background: var(--bg-input, #16213e);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    flex: 1;
+    overflow: auto;
+}
+
+/* Saved gates strip */
+.designer-saved {
+    border-top: 1px solid var(--border, #333);
+    padding: 12px 16px;
+}
+.designer-saved-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+.designer-saved-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border, #333);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 12px;
+}
+.designer-saved-item:hover { background: rgba(255,255,255,0.1); }
+.designer-saved-icon {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.designer-saved-actions {
+    display: flex; gap: 4px; margin-left: 6px;
+}
+.designer-saved-actions button {
+    background: none; border: none; cursor: pointer;
+    font-size: 12px; padding: 2px 4px; border-radius: 3px;
+    opacity: 0.6; transition: opacity 0.15s;
+}
+.designer-saved-actions button:hover { opacity: 1; }
+
+/* Design Gate header button accent style */
+.icon-btn.accent {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+.icon-btn.accent:hover {
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+}
