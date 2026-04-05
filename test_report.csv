@@ -1,0 +1,206 @@
+No,テストファイル,関連ソースファイル,テストカテゴリ,テスト名,テスト内容,結果
+1,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies two real numbers,実数同士の乗算 (3*4=12),PASS
+2,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies two pure imaginary numbers,純虚数同士の乗算 (2i*3i=-6),PASS
+3,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies general complex numbers,一般的な複素数乗算 (1+2i)(3+4i)=-5+10i,PASS
+4,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies by zero,ゼロとの乗算で結果がゼロ,PASS
+5,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies by one,1との乗算で値が不変,PASS
+6,tests/complex.test.js,sim/complex.js,cMul — 複素数乗算,multiplies by i,虚数単位iとの乗算 (a+bi)*i = -b+ai,PASS
+7,tests/complex.test.js,sim/complex.js,cAdd — 複素数加算,adds two complex numbers,複素数の加算 (1+2i)+(3+4i)=4+6i,PASS
+8,tests/complex.test.js,sim/complex.js,cAdd — 複素数加算,adds zero,ゼロの加算で値が不変,PASS
+9,tests/complex.test.js,sim/complex.js,cAdd — 複素数加算,adds negatives,反数の加算でゼロになる,PASS
+10,tests/complex.test.js,sim/complex.js,cSub — 複素数減算,subtracts two complex numbers,複素数の減算 (5+7i)-(2+3i)=3+4i,PASS
+11,tests/complex.test.js,sim/complex.js,cSub — 複素数減算,subtracting itself gives zero,自身との減算でゼロ,PASS
+12,tests/complex.test.js,sim/complex.js,cAbs2 — 二乗絶対値,computes |3+4i|^2 = 25,|3+4i|^2 = 9+16 = 25,PASS
+13,tests/complex.test.js,sim/complex.js,cAbs2 — 二乗絶対値,computes |1+0i|^2 = 1,実数の二乗絶対値,PASS
+14,tests/complex.test.js,sim/complex.js,cAbs2 — 二乗絶対値,computes |0+0i|^2 = 0,ゼロの二乗絶対値,PASS
+15,tests/complex.test.js,sim/complex.js,cAbs2 — 二乗絶対値,computes |1/sqrt(2) + i/sqrt(2)|^2 = 1,正規化された複素数の二乗絶対値が1,PASS
+16,tests/complex.test.js,sim/complex.js,cAbs — 絶対値,computes |3+4i| = 5,|3+4i| = sqrt(25) = 5,PASS
+17,tests/complex.test.js,sim/complex.js,cScale — スカラー倍,scales by 2,2倍スケーリング,PASS
+18,tests/complex.test.js,sim/complex.js,cScale — スカラー倍,scales by 0,ゼロ倍でゼロになる,PASS
+19,tests/complex.test.js,sim/complex.js,cScale — スカラー倍,scales by -1,-1倍で符号反転,PASS
+20,tests/complex.test.js,sim/complex.js,cConj — 複素共役,conjugates 3+4i to 3-4i,虚部の符号反転,PASS
+21,tests/complex.test.js,sim/complex.js,cConj — 複素共役,conjugates real number (no change),実数の共役は不変,PASS
+22,tests/complex.test.js,sim/complex.js,SeededRNG — 再現可能乱数,produces values in [0; 1),100回の出力が全て[0;1)の範囲内,PASS
+23,tests/complex.test.js,sim/complex.js,SeededRNG — 再現可能乱数,is deterministic: same seed gives same sequence,同一シードで同一乱数列を生成,PASS
+24,tests/complex.test.js,sim/complex.js,SeededRNG — 再現可能乱数,different seeds give different sequences,異なるシードで異なる乱数列を生成,PASS
+25,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses "1","1" を [1;0] にパース,PASS
+26,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses "-1","-1" を [-1;0] にパース,PASS
+27,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses "i","i" を [0;1] にパース,PASS
+28,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses "-i","-i" を [0;-1] にパース,PASS
+29,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses "0.5","0.5" を [0.5;0] にパース,PASS
+30,tests/complex.test.js,sim/complex.js,parseComplexExpr — 文字列→複素数,parses empty string as zero,空文字列を [0;0] にパース,PASS
+31,tests/circuit.test.js,model/circuit.js,Gate,creates a gate with correct properties,Gate生成時のtype/targets/controls/colが正しい,PASS
+32,tests/circuit.test.js,model/circuit.js,Gate,assigns unique IDs,異なるGateインスタンスに異なるIDが割り当てられる,PASS
+33,tests/circuit.test.js,model/circuit.js,Gate,computes allQubits correctly,controls+targetsの結合が正しい,PASS
+34,tests/circuit.test.js,model/circuit.js,Gate,returns correct color and label,ゲートメタデータ (色・ラベル) が正しく返る,PASS
+35,tests/circuit.test.js,model/circuit.js,Gate,serializes and deserializes,JSON変換の往復でデータが保持される,PASS
+36,tests/circuit.test.js,model/circuit.js,Circuit,creates with default dimensions,デフォルト2量子ビット・6カラムで生成,PASS
+37,tests/circuit.test.js,model/circuit.js,Circuit,adds a gate successfully,ゲート追加でgates配列に格納される,PASS
+38,tests/circuit.test.js,model/circuit.js,Circuit,auto-extends columns when gate placed at last column,最終列へのゲート配置でnumColsが自動拡張,PASS
+39,tests/circuit.test.js,model/circuit.js,Circuit,rejects qubit out of range,範囲外量子ビットインデックスでエラー,PASS
+40,tests/circuit.test.js,model/circuit.js,Circuit,rejects cell collision,同一セルへの重複配置でエラー,PASS
+41,tests/circuit.test.js,model/circuit.js,Circuit,rejects rotation gate without theta,回転ゲートのthetaパラメータ未指定でエラー,PASS
+42,tests/circuit.test.js,model/circuit.js,Circuit,accepts rotation gate with theta,回転ゲートのtheta指定時は正常追加,PASS
+43,tests/circuit.test.js,model/circuit.js,Circuit,removes a gate by ID,ID指定でゲートが削除される,PASS
+44,tests/circuit.test.js,model/circuit.js,Circuit,getGatesAtCol returns gates in the specified column,指定カラムのゲートのみ返る,PASS
+45,tests/circuit.test.js,model/circuit.js,Circuit,addQubit increments numQubits (max 10),量子ビット追加 (上限10),PASS
+46,tests/circuit.test.js,model/circuit.js,Circuit,removeQubit decrements and cleans up gates,量子ビット削除時にゲートも除去,PASS
+47,tests/circuit.test.js,model/circuit.js,Circuit,removeQubit does not go below 1,最低1量子ビットを維持,PASS
+48,tests/circuit.test.js,model/circuit.js,Circuit,serializes and deserializes,回路のJSON変換往復,PASS
+49,tests/circuit.test.js,model/circuit.js,InputState,creates |0..0> default state,デフォルト状態が|0...0>,PASS
+50,tests/circuit.test.js,model/circuit.js,InputState,setVector works with valid vector,正しいサイズのベクトル設定,PASS
+51,tests/circuit.test.js,model/circuit.js,InputState,setVector rejects wrong-size vector,サイズ不一致でエラー,PASS
+52,tests/circuit.test.js,model/circuit.js,InputState,serializes and deserializes,状態のJSON変換往復,PASS
+53,tests/circuit.test.js,model/circuit.js,INPUT_PRESETS,|0> is [1;0;0;0],|0>プリセットの値が正しい,PASS
+54,tests/circuit.test.js,model/circuit.js,INPUT_PRESETS,|+> has equal superposition,|+>プリセットが等確率重ね合わせ,PASS
+55,tests/circuit.test.js,model/circuit.js,INPUT_PRESETS,all presets are normalized,全プリセットのノルムが1,PASS
+56,tests/circuit.test.js,model/circuit.js,createDemoCircuit,h-measure has 1 qubit H and Measure gates,H→Measureデモ回路の構成,PASS
+57,tests/circuit.test.js,model/circuit.js,createDemoCircuit,bell has 2 qubits H CX and 2 Measures,Bell状態デモ回路の構成,PASS
+58,tests/circuit.test.js,model/circuit.js,createDemoCircuit,ghz has 3 qubits,GHZ状態デモ回路の構成,PASS
+59,tests/circuit.test.js,model/circuit.js,createDemoCircuit,unknown name returns empty 2-qubit circuit,不明な名前で空回路を返す,PASS
+60,tests/circuit.test.js,model/circuit.js,SimulationStep,stores column stateVector and gates,シミュレーションステップのデータ保持,PASS
+61,tests/circuit.test.js,model/circuit.js,Gate metadata,GATE_CATEGORIES covers all standard gates,カテゴリに全標準ゲートが含まれる,PASS
+62,tests/circuit.test.js,model/circuit.js,Gate metadata,GATE_HAS_PARAM is true only for rotation gates,回転ゲートのみパラメータ必須,PASS
+63,tests/circuit.test.js,model/circuit.js,Gate metadata,GATE_QUBIT_COUNT for multi-qubit gates,マルチ量子ビットゲートのビット数,PASS
+64,tests/statevector.test.js,sim/statevector.js,Identity gate,I on |0> gives |0>,恒等ゲートで状態不変,PASS
+65,tests/statevector.test.js,sim/statevector.js,Pauli gates,X on |0> gives |1>,Xゲートでビット反転 |0>→|1>,PASS
+66,tests/statevector.test.js,sim/statevector.js,Pauli gates,X on |1> gives |0>,Xゲートでビット反転 |1>→|0>,PASS
+67,tests/statevector.test.js,sim/statevector.js,Pauli gates,XX = I (X applied twice),X二回適用で恒等,PASS
+68,tests/statevector.test.js,sim/statevector.js,Pauli gates,Y on |0> gives i|1>,Yゲートで |0>→i|1>,PASS
+69,tests/statevector.test.js,sim/statevector.js,Pauli gates,Z on |0> gives |0>,Zゲートで |0>不変,PASS
+70,tests/statevector.test.js,sim/statevector.js,Pauli gates,Z on |1> gives -|1>,Zゲートで |1>→-|1>,PASS
+71,tests/statevector.test.js,sim/statevector.js,Hadamard gate,H on |0> gives |+> = (|0>+|1>)/sqrt(2),アダマールで |0>→|+>,PASS
+72,tests/statevector.test.js,sim/statevector.js,Hadamard gate,H on |1> gives |-> = (|0>-|1>)/sqrt(2),アダマールで |1>→|->,PASS
+73,tests/statevector.test.js,sim/statevector.js,Hadamard gate,HH = I,H二回適用で恒等,PASS
+74,tests/statevector.test.js,sim/statevector.js,S and T gates,S on |1> gives i|1>,Sゲートで |1>→i|1>,PASS
+75,tests/statevector.test.js,sim/statevector.js,S and T gates,SS = Z,S二回適用でZゲートと等価,PASS
+76,tests/statevector.test.js,sim/statevector.js,S and T gates,T on |1> gives e^(i*pi/4)|1>,Tゲートの位相回転,PASS
+77,tests/statevector.test.js,sim/statevector.js,S and T gates,TT = S,T二回適用でSゲートと等価,PASS
+78,tests/statevector.test.js,sim/statevector.js,Rotation gates,Rx(pi) on |0> gives -i|1>,Rx(pi)で完全反転,PASS
+79,tests/statevector.test.js,sim/statevector.js,Rotation gates,Ry(pi) on |0> gives |1>,Ry(pi)で |0>→|1>,PASS
+80,tests/statevector.test.js,sim/statevector.js,Rotation gates,Rz(pi) on |0> gives e^(-i*pi/2)|0>,Rz(pi)で位相のみ変化,PASS
+81,tests/statevector.test.js,sim/statevector.js,Rotation gates,Rx(0) is identity,Rx(0)で状態不変,PASS
+82,tests/statevector.test.js,sim/statevector.js,Rotation gates,Ry(pi/2) on |0> gives equal superposition,Ry(pi/2)で等確率重ね合わせ,PASS
+83,tests/statevector.test.js,sim/statevector.js,Rotation gates,rotation gates preserve norm,回転ゲートがノルムを保存,PASS
+84,tests/statevector.test.js,sim/statevector.js,CNOT gate,CX on |00> gives |00> (control=0 no flip),control=0で反転なし,PASS
+85,tests/statevector.test.js,sim/statevector.js,CNOT gate,CX on |10> gives |11> (control=1 flip target),control=1でtarget反転,PASS
+86,tests/statevector.test.js,sim/statevector.js,CNOT gate,Bell state: H(q0) → CX(q0→q1) on |00>,H→CXでBell状態生成,PASS
+87,tests/statevector.test.js,sim/statevector.js,CZ gate,CZ on |11> gives -|11>,|11>に位相-1を付与,PASS
+88,tests/statevector.test.js,sim/statevector.js,CZ gate,CZ on |10> gives |10> (no phase),|10>に位相変化なし,PASS
+89,tests/statevector.test.js,sim/statevector.js,SWAP gate,SWAP on |10> gives |01>,2量子ビットの状態交換,PASS
+90,tests/statevector.test.js,sim/statevector.js,SWAP gate,SWAP twice is identity,SWAP二回で恒等,PASS
+91,tests/statevector.test.js,sim/statevector.js,Multi-qubit circuits,GHZ state: H → CX → CX on 3 qubits,3量子ビットGHZ状態の生成,PASS
+92,tests/statevector.test.js,sim/statevector.js,Multi-qubit circuits,preserves normalization for complex circuits,複合回路でノルム保存,PASS
+93,tests/statevector.test.js,sim/statevector.js,Simulation history,returns numCols + 1 steps (initial + per column),ステップ数がカラム数+1,PASS
+94,tests/statevector.test.js,sim/statevector.js,Measurement,probability mode: H|0> gives 50/50 probabilities,Probabilityモードで50/50確率,PASS
+95,tests/statevector.test.js,sim/statevector.js,Measurement,probability mode: |0> gives 100% |0>,|0>の測定で100%確率,PASS
+96,tests/statevector.test.js,sim/statevector.js,runShots,deterministic |0> state always gives "0",|0>を1000回測定で全て"0",PASS
+97,tests/statevector.test.js,sim/statevector.js,runShots,H|0> gives roughly 50/50 over many shots,H|0>の10000ショットで約50/50,PASS
+98,tests/statevector.test.js,sim/statevector.js,runShots,Bell state gives only "00" and "11",Bell状態で"00"と"11"のみ出現,PASS
+99,tests/statevector.test.js,sim/statevector.js,runShots,seeded RNG produces reproducible results,同一シードで同一測定結果,PASS
+100,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),Custom X gate (no control) on |0> gives |1>,コントロールなしカスタムXで |0>→|1>,PASS
+101,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),Custom H gate (no control) on |0> gives |+>,コントロールなしカスタムHで |0>→|+>,PASS
+102,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-X (1 control): control=|1> target=|0> → flips target,1コントロールC-X: control=1でtarget反転,PASS
+103,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-X (1 control): control=|0> → does NOT flip target,1コントロールC-X: control=0で反転なし,PASS
+104,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-H (1 control): control=|1> applies H to target,1コントロールC-H: control=1でH適用,PASS
+105,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-H (1 control): control=|0> does NOT apply H,1コントロールC-H: control=0で適用なし,PASS
+106,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),CC-X (Toffoli): both controls=|1> → flips target,2コントロールCC-X: 両方1でtarget反転,PASS
+107,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),CC-X (Toffoli): one control=|0> → does NOT flip target,2コントロールCC-X: 片方0で反転なし,PASS
+108,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),CC-X (Toffoli): no controls set → does NOT flip target,2コントロールCC-X: 両方0で反転なし,PASS
+109,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-X on superposition: H(q0) then C-X(q0→q1) creates Bell state,H+C-XでBell状態生成 (重ね合わせ検証),PASS
+110,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),Controlled-SWAP via 2-qubit custom gate,2量子ビットカスタムゲート+コントロールでSWAP,PASS
+111,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),Controlled-SWAP: control=0 → no swap,コントロール0で2量子ビットSWAPなし,PASS
+112,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-S† (adjoint): control=1 applies S† to target,随伴行列C-S†: control=1でS†適用,PASS
+113,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-S† (adjoint): control=0 does NOT apply,随伴行列C-S†: control=0で適用なし,PASS
+114,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),C-U preserves state normalization,C-Uゲート適用後のノルム保存,PASS
+115,tests/statevector.test.js,sim/statevector.js + model/customGate.js,Custom Gate (C-U),unknown custom gate def returns state unchanged,未登録カスタムゲートで状態不変,PASS
+116,tests/gates_extra.test.js,sim/gates_extra.js,CP — Controlled Phase,CP(pi) on |11> gives -|11>,CP(pi)で|11>に位相-1,PASS
+117,tests/gates_extra.test.js,sim/gates_extra.js,CP — Controlled Phase,CP(pi/2) on |11> gives i|11>,CP(pi/2)で|11>に位相i,PASS
+118,tests/gates_extra.test.js,sim/gates_extra.js,CP — Controlled Phase,CP on |10> does not change state (target=0),target=0で位相変化なし,PASS
+119,tests/gates_extra.test.js,sim/gates_extra.js,CP — Controlled Phase,CP on |01> does not change state (control=0),control=0で位相変化なし,PASS
+120,tests/gates_extra.test.js,sim/gates_extra.js,CP — Controlled Phase,CP(0) is identity,CP(0)で恒等操作,PASS
+121,tests/gates_extra.test.js,sim/gates_extra.js,CRZ — Controlled Rz,CRZ(pi) on |10> applies e^(-i*pi/2) (control=1 target=0),CRZ(pi): target=0にe^(-i*pi/2),PASS
+122,tests/gates_extra.test.js,sim/gates_extra.js,CRZ — Controlled Rz,CRZ(pi) on |11> applies e^(i*pi/2) (control=1 target=1),CRZ(pi): target=1にe^(i*pi/2),PASS
+123,tests/gates_extra.test.js,sim/gates_extra.js,CRZ — Controlled Rz,CRZ on |00> does nothing (control=0),control=0で適用なし,PASS
+124,tests/gates_extra.test.js,sim/gates_extra.js,CRZ — Controlled Rz,CRZ(0) is identity,CRZ(0)で恒等操作,PASS
+125,tests/gates_extra.test.js,sim/gates_extra.js,CSWAP — Fredkin gate,CSWAP on |011> swaps targets (control=1),control=1でターゲットをスワップ,PASS
+126,tests/gates_extra.test.js,sim/gates_extra.js,CSWAP — Fredkin gate,CSWAP does nothing when control=0,control=0でスワップなし,PASS
+127,tests/gates_extra.test.js,sim/gates_extra.js,CSWAP — Fredkin gate,CSWAP does nothing when targets are equal,ターゲット同値でスワップなし,PASS
+128,tests/gates_extra.test.js,sim/gates_extra.js,EXTRA_GATES,contains CP CRZ CSWAP,EXTRA_GATES定数に3ゲート含む,PASS
+129,tests/customGate.test.js,model/customGate.js,CustomGateDefinition,creates with default values,デフォルト値での生成,PASS
+130,tests/customGate.test.js,model/customGate.js,CustomGateDefinition,serializes and deserializes,JSON変換の往復,PASS
+131,tests/customGate.test.js,model/customGate.js,CustomGateDefinition,returns correct icon symbol,アイコンシンボルの正確性,PASS
+132,tests/customGate.test.js,model/customGate.js,CustomGateDefinition,returns diamond for unknown icon,不明アイコンでデフォルト◆,PASS
+133,tests/customGate.test.js,model/customGate.js,Unitary matrix computation,empty sub-circuit gives identity matrix,空サブ回路で単位行列,PASS
+134,tests/customGate.test.js,model/customGate.js,Unitary matrix computation,X sub-circuit gives X matrix,Xサブ回路でX行列,PASS
+135,tests/customGate.test.js,model/customGate.js,Unitary matrix computation,H sub-circuit gives Hadamard matrix,Hサブ回路でアダマール行列,PASS
+136,tests/customGate.test.js,model/customGate.js,Unitary matrix computation,cached matrix is returned on second call,キャッシュされた行列が返る,PASS
+137,tests/customGate.test.js,model/customGate.js,Unitary matrix computation,invalidateMatrix forces recomputation,キャッシュ無効化で再計算,PASS
+138,tests/customGate.test.js,model/customGate.js,Adjoint matrix (U†),X† = X (self-adjoint),Xの随伴がX自身,PASS
+139,tests/customGate.test.js,model/customGate.js,Adjoint matrix (U†),U * U† = I (unitarity check for H),Hのユニタリ性検証 U*U†=I,PASS
+140,tests/customGate.test.js,model/customGate.js,Preset templates,returns Toffoli QFT2 SqrtX,3つのプリセットテンプレート,PASS
+141,tests/customGate.test.js,model/customGate.js,Preset templates,Toffoli has 2 default controls,Toffoliが2コントロール,PASS
+142,tests/customGate.test.js,model/customGate.js,Preset templates,SqrtX sub-circuit uses Rx(pi/2),SqrtXがRx(pi/2)を使用,PASS
+143,tests/customGate.test.js,model/customGate.js,CUSTOM_GATE_ICONS,has 10 icon options,10個のアイコン選択肢,PASS
+144,tests/customGate.test.js,model/customGate.js,CUSTOM_GATE_ICONS,each icon has id symbol and label,各アイコンにid/symbol/label,PASS
+145,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 0,0を認識,PASS
+146,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 1,1を認識,PASS
+147,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches -1,-1を認識,PASS
+148,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 0.5,0.5 (=1/2) を認識,PASS
+149,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 1/sqrt(2),1/sqrt(2)を認識,PASS
+150,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches -1/sqrt(2),-1/sqrt(2)を認識,PASS
+151,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches sqrt(3)/2,sqrt(3)/2を認識,PASS
+152,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 1/sqrt(3),1/sqrt(3)を認識,PASS
+153,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 1/4,0.25 (=1/4) を認識,PASS
+154,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,matches 3/4,0.75 (=3/4) を認識,PASS
+155,tests/fraction.test.js,sim/fraction.js,SymbolicValue.fromFloat,returns null for unrecognized values,認識外の値でnull返却,PASS
+156,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,0 → "0",0のTeX表現,PASS
+157,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,1 → "1",1のTeX表現,PASS
+158,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,-1 → "-1",-1のTeX表現,PASS
+159,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,1/2 → "\frac{1}{2}",1/2の分数TeX表現,PASS
+160,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,1/sqrt(2) → "\frac{1}{\sqrt{2}}",1/sqrt(2)のTeX表現,PASS
+161,tests/fraction.test.js,sim/fraction.js,SymbolicValue.toTeX,sqrt(3)/2 → "\frac{\sqrt{3}}{2}",sqrt(3)/2のTeX表現,PASS
+162,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"0,0 → ""0""",ゼロ複素数のTeX,PASS
+163,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"1,0 → ""1""",実数1のTeX,PASS
+164,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"0,1 → ""i""",虚数単位のTeX,PASS
+165,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"0,-1 → ""-i""",マイナス虚数単位のTeX,PASS
+166,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"1/sqrt(2), 0 → fraction TeX",1/sqrt(2)の分数TeX,PASS
+167,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"0, 1/sqrt(2) → fraction TeX with i",虚部1/sqrt(2)のTeX,PASS
+168,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,"0.5, 0.5 → contains + and i",実部+虚部のTeX表現,PASS
+169,tests/fraction.test.js,sim/fraction.js,formatComplexTeX,unrecognized value falls back to decimal,認識外値のデシマルフォールバック,PASS
+170,tests/texParser.test.js,sim/texParser.js,Basic ket parsing,|0\rangle → |0>,|0>ケットのパース,PASS
+171,tests/texParser.test.js,sim/texParser.js,Basic ket parsing,|1\rangle → |1>,|1>ケットのパース,PASS
+172,tests/texParser.test.js,sim/texParser.js,Basic ket parsing,|00\rangle → |00>,2量子ビット|00>のパース,PASS
+173,tests/texParser.test.js,sim/texParser.js,Basic ket parsing,|11\rangle → |11>,2量子ビット|11>のパース,PASS
+174,tests/texParser.test.js,sim/texParser.js,Basic ket parsing,|01\rangle → |01>,2量子ビット|01>のパース,PASS
+175,tests/texParser.test.js,sim/texParser.js,Coefficient parsing,\frac{1}{\sqrt{2}}|0> + \frac{1}{\sqrt{2}}|1> → |+>,分数係数で|+>状態を構築,PASS
+176,tests/texParser.test.js,sim/texParser.js,Coefficient parsing,\frac{1}{\sqrt{2}}|0> - \frac{1}{\sqrt{2}}|1> → |->,分数係数で|->状態を構築,PASS
+177,tests/texParser.test.js,sim/texParser.js,Coefficient parsing,numeric coefficient: 0.5|0> + 0.5|1>,数値係数のパース,PASS
+178,tests/texParser.test.js,sim/texParser.js,Coefficient parsing,negative coefficient: -|1>,負の係数のパース,PASS
+179,tests/texParser.test.js,sim/texParser.js,Bell state,\frac{1}{\sqrt{2}}|00> + \frac{1}{\sqrt{2}}|11>,Bell状態のTeXパース,PASS
+180,tests/texParser.test.js,sim/texParser.js,Imaginary coefficients,i|1\rangle,虚数係数i|1>のパース,PASS
+181,tests/texParser.test.js,sim/texParser.js,Imaginary coefficients,-i|1\rangle,虚数係数-i|1>のパース,PASS
+182,tests/texParser.test.js,sim/texParser.js,Symbolic kets,|+\rangle → equal superposition,シンボリック|+>ケットのパース,PASS
+183,tests/texParser.test.js,sim/texParser.js,Symbolic kets,|-\rangle → |0> - |1> / sqrt(2),シンボリック|->ケットのパース,PASS
+184,tests/texParser.test.js,sim/texParser.js,Euler phase,e^{i\pi}|0\rangle → -|0>,Euler位相e^(i*pi)=-1の適用,PASS
+185,tests/texParser.test.js,sim/texParser.js,Euler phase,e^{i\pi/2}|1\rangle → i|1>,Euler位相e^(i*pi/2)=iの適用,PASS
+186,tests/texParser.test.js,sim/texParser.js,Parenthesized expressions,\frac{1}{\sqrt{2}}(|0> + |1>),括弧による分配法則,PASS
+187,tests/texParser.test.js,sim/texParser.js,Error handling,empty input returns error,空入力でエラー返却,PASS
+188,tests/texParser.test.js,sim/texParser.js,Error handling,invalid ket label returns error,不正ケットラベルでエラー返却,PASS
+189,tests/texParser.test.js,sim/texParser.js,Error handling,wrong qubit count ket returns error,量子ビット数不一致でエラー返却,PASS
+190,tests/densitymatrix.test.js,sim/densitymatrix.js,fromPureState,|0> gives rho = [[1;0];[0;0]],|0>の密度行列,PASS
+191,tests/densitymatrix.test.js,sim/densitymatrix.js,fromPureState,|1> gives rho = [[0;0];[0;1]],|1>の密度行列,PASS
+192,tests/densitymatrix.test.js,sim/densitymatrix.js,fromPureState,|+> gives rho = [[0.5;0.5];[0.5;0.5]],|+>の密度行列,PASS
+193,tests/densitymatrix.test.js,sim/densitymatrix.js,fromPureState,trace = 1 for any pure state,純粋状態のトレースが1,PASS
+194,tests/densitymatrix.test.js,sim/densitymatrix.js,fromEnsemble,50/50 mix of |0> and |1> gives maximally mixed state,最大混合状態の生成,PASS
+195,tests/densitymatrix.test.js,sim/densitymatrix.js,fromEnsemble,trace = 1 for mixed state,混合状態のトレースが1,PASS
+196,tests/densitymatrix.test.js,sim/densitymatrix.js,fromEnsemble,pure state ensemble is equivalent to fromPureState,確率1のアンサンブルが純粋状態と等価,PASS
+197,tests/densitymatrix.test.js,sim/densitymatrix.js,applySingleGate,X on |0><0| gives |1><1|,Xゲートの密度行列適用,PASS
+198,tests/densitymatrix.test.js,sim/densitymatrix.js,applySingleGate,H on |0><0| gives |+><+|,Hゲートの密度行列適用,PASS
+199,tests/densitymatrix.test.js,sim/densitymatrix.js,applySingleGate,preserves trace after gate application,ゲート適用後のトレース保存,PASS
+200,tests/densitymatrix.test.js,sim/densitymatrix.js,applySingleGate,X on maximally mixed state stays maximally mixed,最大混合状態へのXで状態不変,PASS
+201,tests/densitymatrix.test.js,sim/densitymatrix.js,getQubitProbabilities,|0> has P(1) = 0,|0>のP(1)=0,PASS
+202,tests/densitymatrix.test.js,sim/densitymatrix.js,getQubitProbabilities,|1> has P(1) = 1,|1>のP(1)=1,PASS
+203,tests/densitymatrix.test.js,sim/densitymatrix.js,getQubitProbabilities,|+> has P(1) = 0.5,|+>のP(1)=0.5,PASS
+204,tests/densitymatrix.test.js,sim/densitymatrix.js,getQubitProbabilities,maximally mixed state has P(1) = 0.5,最大混合状態のP(1)=0.5,PASS
+205,tests/densitymatrix.test.js,sim/densitymatrix.js,getQubitProbabilities,2-qubit |01> has P(q0=1) = 1 and P(q1=1) = 0,2量子ビットの個別確率,PASS
