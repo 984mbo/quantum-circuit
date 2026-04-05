@@ -12,6 +12,7 @@ import { saveCircuit, loadCircuit } from '../storage/localStorage.js';
 
 import { LearnDrawer } from './learnDrawer.js';
 import { InputDrawer } from './inputDrawer.js';
+import { GateDesigner } from './gateDesigner.js';
 
 class App {
     constructor() {
@@ -42,6 +43,15 @@ class App {
 
         // Learn Drawer
         this.learnDrawer = new LearnDrawer(this);
+
+        // Custom Gate Designer
+        this.gateDesigner = new GateDesigner({
+            onSidebarUpdate: () => this.dnd._initPaletteDrag(),
+            onCircuitUpdate: () => {
+                this.canvas.render();
+                this._onCircuitChange();
+            }
+        });
 
         this._loadDemo('bell');
     }

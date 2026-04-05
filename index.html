@@ -33,6 +33,7 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="icon-btn accent" id="btn-design-gate" title="Design Custom Gate">Design Gate</button>
       <button class="icon-btn" id="btn-input-config" title="Advanced Input Settings">Advanced Input</button>
       <button class="icon-btn" id="btn-learn" title="Learn Mode">Learn</button>
       <button class="icon-btn" id="btn-save" title="Save">Save</button>
@@ -112,6 +113,12 @@
               <div class="drag-gate" draggable="true" data-gate="Measure" style="--gc:#f97316"><svg viewBox="0 0 32 32" width="24" height="24" style="display:block;margin:auto;"><path d="M 4 20 A 12 12 0 0 1 28 20" fill="none" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/><line x1="2" y1="20" x2="30" y2="20" stroke="#f97316" stroke-width="2"/><line x1="16" y1="20" x2="24.5" y2="8.5" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="20" r="2.5" fill="#f97316"/><polygon points="24.5,8.5 21,11.5 23.5,12.5" fill="#f97316"/></svg></div>
             </div>
           </div>
+          <div class="sidebar-section" id="sidebar-custom-section" style="display:none">
+            <div class="sidebar-label">Custom</div>
+            <div class="sidebar-gates" id="sidebar-custom-gates">
+              <!-- JS fills this with custom gate icons -->
+            </div>
+          </div>
           <div class="sidebar-section input-section">
             <div class="sidebar-label">Initial State</div>
             <div id="sidebar-input-presets" class="input-presets-sidebar">
@@ -161,6 +168,97 @@
       <div class="drawer-actions">
         <button class="tool-btn" id="btn-normalize-input">Normalize</button>
         <button class="tool-btn primary" id="btn-apply-input">Apply State</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gate Designer Panel (slides down from top) -->
+  <div class="gate-designer-overlay" id="gate-designer-overlay">
+    <div class="gate-designer-panel" id="gate-designer-panel">
+      <div class="designer-header">
+        <h2>⚛ Custom Gate Designer</h2>
+        <div class="designer-header-actions">
+          <button class="tool-btn" id="btn-designer-import" title="Import from JSON">📥 Import</button>
+          <button class="tool-btn" id="btn-designer-export" title="Export to JSON">📤 Export</button>
+          <button class="close-drawer" id="btn-close-designer">×</button>
+        </div>
+      </div>
+      <div class="designer-body">
+        <!-- Left: settings -->
+        <div class="designer-settings">
+          <div class="designer-field">
+            <label>Gate Name</label>
+            <input type="text" id="designer-name" placeholder="MyGate" maxlength="12">
+          </div>
+          <div class="designer-field">
+            <label>U Qubits</label>
+            <select id="designer-qubits">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+          <div class="designer-field">
+            <label>Control Qubits</label>
+            <select id="designer-controls">
+              <option value="0">0 (no control)</option>
+              <option value="1">1 (C-U)</option>
+              <option value="2" selected>2 (CC-U)</option>
+              <option value="3">3 (CCC-U)</option>
+            </select>
+          </div>
+          <div class="designer-field">
+            <label>Icon</label>
+            <div class="designer-icon-grid" id="designer-icon-grid">
+              <!-- JS fills icon options -->
+            </div>
+          </div>
+          <div class="designer-field">
+            <label>Color</label>
+            <input type="color" id="designer-color" value="#22d3ee">
+          </div>
+          <div class="designer-field">
+            <label>Templates</label>
+            <select id="designer-templates">
+              <option value="">-- Select template --</option>
+            </select>
+          </div>
+          <div class="designer-actions">
+            <button class="tool-btn primary" id="btn-designer-save">💾 Save</button>
+            <button class="tool-btn" id="btn-designer-cancel">Cancel</button>
+          </div>
+        </div>
+        <!-- Center: sub-circuit editor -->
+        <div class="designer-circuit">
+          <div class="designer-circuit-label">U Sub-Circuit</div>
+          <div class="designer-circuit-toolbar">
+            <div class="designer-gate-palette" id="designer-gate-palette">
+              <!-- JS fills with basic gate buttons -->
+            </div>
+          </div>
+          <div class="designer-circuit-canvas" id="designer-circuit-canvas">
+            <svg id="designer-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+        </div>
+        <!-- Right: preview -->
+        <div class="designer-preview">
+          <div class="designer-preview-label">Preview</div>
+          <div class="designer-matrix" id="designer-matrix">
+            <!-- JS fills with unitary matrix -->
+          </div>
+          <div class="designer-state-preview" id="designer-state-preview">
+            <!-- JS fills with state transformation preview -->
+          </div>
+        </div>
+      </div>
+      <!-- Saved gates list -->
+      <div class="designer-saved">
+        <div class="designer-saved-label">Saved Gates</div>
+        <div class="designer-saved-list" id="designer-saved-list">
+          <!-- JS fills with saved gates -->
+        </div>
       </div>
     </div>
   </div>

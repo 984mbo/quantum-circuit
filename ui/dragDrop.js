@@ -2,7 +2,7 @@
 // ui/dragDrop.js — Interaction Handler (DnD, Click, Delete)
 // ============================================================
 
-import { GATE_QUBIT_COUNT, GATE_HAS_PARAM, Gate } from '../model/circuit.js';
+import { GATE_QUBIT_COUNT, GATE_HAS_PARAM, Gate, isCustomGate, getCustomGateDef } from '../model/circuit.js';
 import { CELL_W, CELL_H, WIRE_X_START, WIRE_Y_START } from './svgCanvas.js';
 
 export class DragDropHandler {
@@ -33,15 +33,8 @@ export class DragDropHandler {
     // ─── Drag & Drop ──────────────────────────────────────────
 
     _initDnD() {
-        // Sidebar items are draggable
-        document.querySelectorAll('.drag-gate').forEach(el => {
-            el.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('gate-type', el.dataset.gate);
-                e.dataTransfer.effectAllowed = 'copy';
-                this.clickModeType = null; // Cancel click mode
-                this._clearSelection();
-            });
-        });
+        // Sidebar items are draggable — use _initPaletteDrag for re-init
+        this._initPaletteDrag();
 
         // Canvas container as drop zone
         this.container.addEventListener('dragover', (e) => {
@@ -117,22 +110,7 @@ export class DragDropHandler {
     // ─── Click Placement ──────────────────────────────────────
 
     _initClickPlacement() {
-        // Sidebar click to enter mode
-        document.querySelectorAll('.drag-gate').forEach(el => {
-            el.addEventListener('click', (e) => {
-                // Toggle if same
-                if (this.clickModeType === el.dataset.gate) {
-                    this.clickModeType = null;
-                    el.classList.remove('selected-tool');
-                } else {
-                    // Unselect others
-                    document.querySelectorAll('.drag-gate').forEach(b => b.classList.remove('selected-tool'));
-                    this.clickModeType = el.dataset.gate;
-                    el.classList.add('selected-tool');
-                }
-            });
-        });
-
+        // Sidebar click to enter mode — delegate to _initPaletteDrag
         // Canvas click
         this.canvas.svg.addEventListener('click', (e) => {
             if (this._skipNextClick) {
@@ -144,11 +122,37 @@ export class DragDropHandler {
             const pos = this.canvas.getGridPos(e.clientX, e.clientY);
             if (pos) {
                 this._tryPlaceGate(this.clickModeType, pos.col, pos.qubit);
-                // Don't exit mode to allow multiple placements? Or exit?
-                // "Click placement -> Canvas Click" usually implies one-shot or sticky.
-                // Let's make it sticky for convenience? But "Selection" needs click too.
-                // If we are in placement mode, click places. If not, click selects.
             }
+        });
+    }
+
+    /**
+     * Re-initialize sidebar palette drag and click handlers.
+     * Called on init and whenever custom gates are added/removed.
+     */
+    _initPaletteDrag() {
+        document.querySelectorAll('.drag-gate').forEach(el => {
+            // Remove old listeners by re-cloning
+            const clone = el.cloneNode(true);
+            el.parentNode.replaceChild(clone, el);
+
+            clone.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('gate-type', clone.dataset.gate);
+                e.dataTransfer.effectAllowed = 'copy';
+                this.clickModeType = null;
+                this._clearSelection();
+            });
+
+            clone.addEventListener('click', (e) => {
+                if (this.clickModeType === clone.dataset.gate) {
+                    this.clickModeType = null;
+                    clone.classList.remove('selected-tool');
+                } else {
+                    document.querySelectorAll('.drag-gate').forEach(b => b.classList.remove('selected-tool'));
+                    this.clickModeType = clone.dataset.gate;
+                    clone.classList.add('selected-tool');
+                }
+            });
         });
     }
 
@@ -323,27 +327,45 @@ export class DragDropHandler {
         let targets = [startQubit];
         let controls = [];
 
-        // Multi-qubit handling
-        const count = GATE_QUBIT_COUNT[type] || 1;
-        if (count === 2) {
-            // Rule: clicked is control/upper, next is target/lower
-            if (startQubit + 1 >= this.circuit.numQubits) {
-                alert('Cannot place 2-qubit gate on the bottom wire');
+        // Custom gate handling
+        if (isCustomGate(type)) {
+            const def = getCustomGateDef(type);
+            if (!def) return;
+            const totalQubits = def.numQubits + def.defaultControls;
+            if (startQubit + totalQubits > this.circuit.numQubits) {
+                alert(`Not enough wires. Need ${totalQubits} qubits.`);
                 return;
             }
-            if (type === 'CX' || type === 'CNOT' || type === 'CZ') {
-                controls = [startQubit];
-                targets = [startQubit + 1];
-            } else if (type === 'SWAP') {
-                targets = [startQubit, startQubit + 1];
+            // Assign control qubits first, then target qubits
+            controls = [];
+            targets = [];
+            for (let i = 0; i < def.defaultControls; i++) {
+                controls.push(startQubit + i);
+            }
+            for (let i = 0; i < def.numQubits; i++) {
+                targets.push(startQubit + def.defaultControls + i);
+            }
+        } else {
+            // Multi-qubit handling
+            const count = GATE_QUBIT_COUNT[type] || 1;
+            if (count === 2) {
+                if (startQubit + 1 >= this.circuit.numQubits) {
+                    alert('Cannot place 2-qubit gate on the bottom wire');
+                    return;
+                }
+                if (type === 'CX' || type === 'CNOT' || type === 'CZ') {
+                    controls = [startQubit];
+                    targets = [startQubit + 1];
+                } else if (type === 'SWAP') {
+                    targets = [startQubit, startQubit + 1];
+                }
             }
         }
 
         let params = {};
         if (GATE_HAS_PARAM[type]) {
-            // "theta is pi unit"
             const input = prompt(`Enter theta for ${type} (units of π):`, '0.5');
-            if (input === null) return; // Cancel
+            if (input === null) return;
             const val = parseFloat(input);
             if (isNaN(val)) {
                 alert('Invalid number');
@@ -355,13 +377,9 @@ export class DragDropHandler {
         try {
             const gate = new Gate(type, targets, controls, params, col);
             this.circuit.addGate(gate);
-
-            // Reset mode if needed?
-            // Let's keep mode for rapid placement, but maybe clear selection
             this._clearSelection();
             this.canvas.render();
             this.onUpdate();
-
         } catch (err) {
             alert(err.message);
         }
@@ -442,21 +460,20 @@ export class DragDropHandler {
             if (draggingControl && dragLine) {
                 const rect = this.canvas.svg.getBoundingClientRect();
                 const vb = this.canvas.svg.viewBox.baseVal;
+                // Use unified scale for preserveAspectRatio="xMinYMin meet"
                 const scaleX = vb.width / rect.width;
                 const scaleY = vb.height / rect.height;
+                const scale = Math.max(scaleX, scaleY);
 
-                const x = (e.clientX - rect.left) * scaleX;
-                const y = (e.clientY - rect.top) * scaleY;
+                const x = (e.clientX - rect.left) * scale;
+                const y = (e.clientY - rect.top) * scale;
 
-                // Snap to current control pos start
-                // Actually start from gate column x?
                 const gate = this.circuit.gates.find(g => g.id === draggingControl.gateId);
                 if (gate) {
                     const startX = this.canvas.colX(gate.col);
-                    const startY = this.canvas.qubitY(draggingControl.originalQubit); // Or current mouse y?
-                    // Let's draw line from gate horizontal center to mouse
+                    const startY = this.canvas.qubitY(draggingControl.originalQubit);
                     dragLine.setAttribute('x1', startX);
-                    dragLine.setAttribute('y1', this.canvas.qubitY(draggingControl.originalQubit));
+                    dragLine.setAttribute('y1', startY);
                     dragLine.setAttribute('x2', x);
                     dragLine.setAttribute('y2', y);
                 }

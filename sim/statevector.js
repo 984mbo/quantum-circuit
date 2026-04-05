@@ -3,7 +3,7 @@
 // ============================================================
 
 import { cAdd, cMul, cAbs2, SeededRNG } from './complex.js';
-import { SimulationStep } from '../model/circuit.js';
+import { SimulationStep, isCustomGate, getCustomGateDef } from '../model/circuit.js';
 import { applyExtraGate } from './gates_extra.js';
 import { DensityMatrixEngine } from './densitymatrix.js';
 
@@ -167,6 +167,8 @@ export class QuantumEngine {
                 nextState = this._applyControlledGate(nextState, gate, numQubits);
             } else if (['Rx', 'Ry', 'Rz'].includes(gate.type)) {
                 nextState = this._applyRotationGate(nextState, gate, numQubits);
+            } else if (isCustomGate(gate.type)) {
+                nextState = this._applyCustomGate(nextState, gate, numQubits);
             } else {
                 // Standard single qubit gate
                 const mat = GATE_MATRICES[gate.type];
@@ -179,6 +181,78 @@ export class QuantumEngine {
             }
         }
         return nextState;
+    }
+
+    // --- Custom Gate (multi-controlled unitary) ---
+    _applyCustomGate(state, gate, numQubits) {
+        const def = getCustomGateDef(gate.type);
+        if (!def) return state;
+
+        // Check if this is U† (adjoint)
+        const isAdjoint = gate.params && gate.params.adjoint;
+        const uMatrix = isAdjoint ? def.getAdjointMatrix() : def.getUnitaryMatrix();
+        const uDim = uMatrix.length;
+        const uQubits = def.numQubits;
+        const controls = gate.controls || [];
+        const targets = gate.targets; // target qubits for U part
+
+        const dim = 1 << numQubits;
+        const newState = this._cloneState(state);
+
+        // Precompute control mask
+        let controlMask = 0;
+        for (const c of controls) controlMask |= (1 << c);
+
+        // For each computational basis state, apply U only if all controls are 1
+        // Group basis states by target qubit subspace
+        const processed = new Uint8Array(dim);
+
+        for (let i = 0; i < dim; i++) {
+            if (processed[i]) continue;
+
+            // Check all controls are 1
+            if (controls.length > 0 && (i & controlMask) !== controlMask) continue;
+
+            // Extract the target qubit bits from i
+            let targetBits = 0;
+            for (let t = 0; t < uQubits; t++) {
+                if ((i >> targets[t]) & 1) {
+                    targetBits |= (1 << t);
+                }
+            }
+
+            // Only process once per group (when targetBits = 0, process entire group)
+            if (targetBits !== 0) continue;
+
+            // Collect all 2^uQubits basis states in this group
+            const groupIndices = new Array(uDim);
+            for (let k = 0; k < uDim; k++) {
+                let idx = i;
+                for (let t = 0; t < uQubits; t++) {
+                    if ((k >> t) & 1) {
+                        idx |= (1 << targets[t]);
+                    } else {
+                        idx &= ~(1 << targets[t]);
+                    }
+                }
+                groupIndices[k] = idx;
+            }
+
+            // Apply U matrix to this group
+            const oldAmps = groupIndices.map(idx => [...state[idx]]);
+            for (let row = 0; row < uDim; row++) {
+                let sumRe = 0, sumIm = 0;
+                for (let col = 0; col < uDim; col++) {
+                    const [mRe, mIm] = uMatrix[row][col];
+                    const [aRe, aIm] = oldAmps[col];
+                    sumRe += mRe * aRe - mIm * aIm;
+                    sumIm += mRe * aIm + mIm * aRe;
+                }
+                newState[groupIndices[row]] = [sumRe, sumIm];
+                processed[groupIndices[row]] = 1;
+            }
+        }
+        return newState;
     }
 
     // --- Single Qubit Gate ---

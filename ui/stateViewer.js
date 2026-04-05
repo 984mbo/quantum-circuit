@@ -5,7 +5,7 @@
 import { cAbs, cAbs2 } from '../sim/complex.js';
 import { renderTeX, stateVectorToTeX, texToHTML, formatComplexTeX } from './texRenderer.js';
 import { SymbolicValue } from '../sim/fraction.js';
-import { GATE_COLORS } from '../model/circuit.js';
+import { GATE_COLORS, isCustomGate, getCustomGateDef } from '../model/circuit.js';
 
 export class StateViewer {
     constructor(container) {
@@ -163,10 +163,21 @@ export class StateViewer {
                 step.appliedGates.forEach(g => {
                     const badge = document.createElement('span');
                     badge.className = 'timeline-gate-badge';
-                    const color = GATE_COLORS[g.type] || '#888';
+
+                    let labelText = g.type === 'CX' || g.type === 'CNOT' ? 'CX' : g.type;
+                    let color = GATE_COLORS[g.type] || '#888';
+
+                    if (isCustomGate(g.type)) {
+                        const def = getCustomGateDef(g.type);
+                        if (def) {
+                            labelText = def.name;
+                            color = def.color || color;
+                        }
+                    }
+
                     badge.style.backgroundColor = color + '33';
                     badge.style.borderColor = color;
-                    badge.textContent = g.type === 'CX' || g.type === 'CNOT' ? 'CX' : g.type;
+                    badge.textContent = labelText;
                     gatesDiv.appendChild(badge);
                 });
                 header.appendChild(gatesDiv);
